@@ -1,0 +1,31 @@
+name: Perbarui data kontrak
+
+on:
+  schedule:
+    - cron: "41 2 * * 1"   # setiap Senin 02:41 UTC (09:41 WIB)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  perbarui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas requests
+      - name: Ambil ulang data USAspending, Contracts Finder, dan kurs
+        run: python scripts/kumpulkan_data.py
+      - name: Uji data baru
+        run: pip install pytest && python -m pytest tests/ -q
+      - name: Commit bila ada perubahan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet -- data/*.csv && echo "Tidak ada kontrak baru" && exit 0
+          git commit -m "Perbarui data kontrak mingguan"
+          git push

@@ -1,0 +1,12 @@
+{
+  "diperbarui": "2026-11-05T10:47:08Z",
+  "transaksi_as": 1807,
+  "kontrak_as": 439,
+  "idv_as": 37,
+  "kontrak_uk": 29,
+  "sumber": [
+    "api.usaspending.gov",
+    "contractsfinder.service.gov.uk",
+    "api.frankfurter.dev"
+  ]
+}
