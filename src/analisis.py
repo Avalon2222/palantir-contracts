@@ -23,18 +23,20 @@ NAMA_NEGARA = {"USA": "Amerika Serikat", "AFG": "Afganistan", "DEU": "Jerman", "
                "CAN": "Kanada", "ISR": "Israel"}
 
 
+# (batas, jumlah desimal, akhiran) dari satuan terkecil ke terbesar
+SATUAN = [(1, 0, ""), (1e3, 0, " rb"), (1e6, 1, " jt"), (1e9, 2, " M")]
+
+
 def format_usd(x: float) -> str:
     """1_234_567_890 -> '$1,23 M' (miliar), 45_600_000 -> '$45,6 jt'. Gaya angka Indonesia."""
     tanda = "-" if x < 0 else ""
     x = abs(x)
-    if x >= 1e9:
-        teks = f"{x / 1e9:,.2f} M"
-    elif x >= 1e6:
-        teks = f"{x / 1e6:,.1f} jt"
-    elif x >= 1e3:
-        teks = f"{x / 1e3:,.0f} rb"
-    else:
-        teks = f"{x:,.0f}"
+    i = max((j for j, (batas, _, _) in enumerate(SATUAN) if x >= batas), default=0)
+    # Naik satuan kalau pembulatan menghasilkan 1000 (999.999.999 -> "$1,00 M", bukan "$1.000,0 jt").
+    while i < len(SATUAN) - 1 and round(x / SATUAN[i][0], SATUAN[i][1]) >= 1000:
+        i += 1
+    batas, desimal, akhiran = SATUAN[i]
+    teks = f"{x / batas:,.{desimal}f}{akhiran}"
     return tanda + "$" + teks.replace(",", "#").replace(".", ",").replace("#", ".")
 
 

@@ -37,6 +37,13 @@ def test_format_usd():
     assert analisis.format_gbp(1_200_000_000) == "£1,20 M"
 
 
+def test_format_usd_pembulatan_naik_satuan():
+    assert analisis.format_usd(999_999_999) == "$1,00 M"
+    assert analisis.format_usd(999_960) == "$1,0 jt"
+    assert analisis.format_usd(999.7) == "$1 rb"
+    assert analisis.format_usd(0) == "$0"
+
+
 def test_per_tahun_sektor_lengkap_dan_total_sama():
     df = trx_contoh()
     hasil = analisis.per_tahun_sektor(df)
