@@ -109,3 +109,23 @@ def test_cari_tidak_peka_huruf():
     assert len(analisis.cari(df, "maven", ["deskripsi", "instansi"])) == 1
     assert len(analisis.cari(df, "", ["deskripsi"])) == 2
     assert len(analisis.cari(df, "(", ["deskripsi"])) == 0  # karakter regex aman
+
+
+def test_kontrak_terbesar_urut_menurun():
+    hasil = analisis.kontrak_terbesar(trx_contoh(), n=2)
+    assert list(hasil["nilai_usd"]) == [300.0, 200.0]
+    assert list(hasil.index) == [0, 1]
+
+
+def test_temuan_utama_angka_kunci():
+    idv = pd.DataFrame({"award_id": ["X", "Y"], "plafon_usd": [1000.0, 10_000.0],
+                        "diikat_usd": [250.0, 1.0], "multi_vendor": [False, True]})
+    t = analisis.temuan_utama(trx_contoh(), uk_contoh(), idv)
+    assert t["total_as"] == pytest.approx(670.0)
+    assert t["jumlah_kontrak_as"] == 4               # A1 muncul dua kali tapi dihitung sekali
+    assert t["total_uk_gbp"] == pytest.approx(30.0)  # kontrak framework tidak ikut dijumlah
+    assert t["jumlah_kontrak_uk"] == 2
+    assert t["tahun_rekor"] == 2022 and t["nilai_rekor"] == pytest.approx(320.0)
+    assert t["persen_dua_tahun_terakhir"] == pytest.approx(100 * 520 / 670)
+    assert t["plafon_aktif"] == pytest.approx(1000.0)  # plafon multi-vendor tidak dihitung
+    assert 0 <= t["persen_militer"] <= 100
