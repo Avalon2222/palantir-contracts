@@ -62,3 +62,19 @@ def test_meta():
     meta = muat_data.muat_meta()
     assert meta.get("transaksi_as", 0) > 0
     assert isinstance(pd.Timestamp(meta["diperbarui"]), pd.Timestamp)
+
+
+def test_tambah_sektor_as_isi_sub_instansi_kosong():
+    df = pd.DataFrame({"instansi": ["Department of Defense", "Department of Homeland Security"],
+                       "sub_instansi": [None, "U.S. Immigration and Customs Enforcement"]})
+    hasil = muat_data.tambah_sektor_as(df)
+    assert hasil.loc[0, "sub_instansi"] == "Department of Defense"   # jatuh ke instansi induk
+    assert hasil["sektor"].notna().all() and hasil["nama_pendek"].notna().all()
+    assert df["sub_instansi"].isna().iloc[0]                         # input tidak diubah
+
+
+def test_kurs_lengkap_dan_masuk_akal():
+    kurs = muat_data.muat_kurs()
+    tahun = kurs["tahun"].tolist()
+    assert tahun == list(range(tahun[0], tahun[-1] + 1))   # tanpa tahun bolong
+    assert kurs["gbp_ke_usd"].between(1.0, 2.0).all()

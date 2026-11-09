@@ -41,3 +41,9 @@ def test_setiap_sektor_punya_warna():
 def test_singkat():
     assert sektor.singkat("U.S. Immigration and Customs Enforcement") == "ICE"
     assert sektor.singkat("Nama Tidak Dikenal") == "Nama Tidak Dikenal"
+
+
+def test_cocok_tanpa_pola_selalu_benar():
+    assert sektor._cocok(None, "apa saja")
+    assert sektor._cocok(r"army", "Department of the ARMY")   # tidak peka huruf besar
+    assert not sektor._cocok(r"army", None)                   # teks kosong aman
