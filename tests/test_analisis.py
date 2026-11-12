@@ -129,3 +129,32 @@ def test_temuan_utama_angka_kunci():
     assert t["persen_dua_tahun_terakhir"] == pytest.approx(100 * 520 / 670)
     assert t["plafon_aktif"] == pytest.approx(1000.0)  # plafon multi-vendor tidak dihitung
     assert 0 <= t["persen_militer"] <= 100
+
+
+def test_per_negara_negara_baru_tidak_masuk_as():
+    df = trx_contoh()
+    df.loc[0, "negara_pelaksanaan"] = "FRANCE"
+    df.loc[1, "negara_pelaksanaan"] = None  # lokasi kosong = Amerika Serikat
+    neg = analisis.per_negara(df).set_index("negara")
+    assert neg.loc["France", "nilai_usd"] == pytest.approx(100.0)
+    assert pd.isna(neg.loc["France", "iso3"])
+    assert neg.loc["Amerika Serikat", "nilai_usd"] == pytest.approx(50.0 + 200.0 + 300.0 - 20.0)
+    assert neg["nilai_usd"].sum() == pytest.approx(df["nilai_usd"].sum())
+
+
+def test_per_negara_nama_dengan_spasi_dan_huruf_kecil():
+    df = trx_contoh()
+    df["negara_pelaksanaan"] = df["negara_pelaksanaan"].str.lower() + "  "
+    assert set(analisis.per_negara(df)["iso3"]) == {"USA", "AFG"}
+
+
+def test_per_tahun_sektor_kosong():
+    hasil = analisis.per_tahun_sektor(trx_contoh().iloc[0:0])
+    assert hasil.empty and list(hasil.columns) == ["tahun", "sektor", "nilai_usd"]
+
+
+def test_cagr_tahun_terbalik_atau_tanpa_data():
+    df = trx_contoh()
+    assert analisis.cagr(df, 2022, 2020) is None
+    assert analisis.cagr(df, 2019, 2022) is None  # tahun awal tanpa transaksi
+    assert analisis.pertumbuhan(df, 2019, 2022) is None
