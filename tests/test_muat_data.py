@@ -78,3 +78,10 @@ def test_kurs_lengkap_dan_masuk_akal():
     tahun = kurs["tahun"].tolist()
     assert tahun == list(range(tahun[0], tahun[-1] + 1))   # tanpa tahun bolong
     assert kurs["gbp_ke_usd"].between(1.0, 2.0).all()
+
+
+def test_muat_meta_berkas_rusak_atau_hilang(tmp_path, monkeypatch):
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    assert muat_data.muat_meta() == {}
+    (tmp_path / "META.json").write_text("{bukan json", encoding="utf-8")
+    assert muat_data.muat_meta() == {}
