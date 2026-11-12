@@ -112,16 +112,24 @@ def per_negara(trx: pd.DataFrame, uk: pd.DataFrame | None = None) -> pd.DataFram
     """
     Total per negara pelaksanaan. Kontrak AS memakai place of performance; kontrak Inggris dihitung di GBR
     (dikonversi ke USD dengan kurs rata-rata tahunan). Kolom 'sumber' membedakan keduanya.
+
+    Negara yang belum ada di ``ISO3`` tetap tampil dengan namanya sendiri (iso3 kosong), tidak
+    ikut dijumlahkan ke Amerika Serikat. Lokasi kosong dianggap Amerika Serikat.
     """
     d = trx.copy()
-    d["iso3"] = d["negara_pelaksanaan"].fillna("UNITED STATES").str.upper().map(ISO3).fillna("USA")
-    g = d.groupby("iso3", as_index=False).agg(nilai_usd=("nilai_usd", "sum"), kontrak=("award_id", "nunique"))
+    nama = d["negara_pelaksanaan"].fillna("UNITED STATES").str.strip().str.upper()
+    d["kunci"] = nama.map(ISO3).fillna(nama)
+    g = d.groupby("kunci", as_index=False).agg(nilai_usd=("nilai_usd", "sum"), kontrak=("award_id", "nunique"))
+    g["iso3"] = g["kunci"].where(g["kunci"].isin(set(ISO3.values())))
+    g["nama_asli"] = g["kunci"].str.title()
+    g = g.drop(columns="kunci")
     g["sumber"] = "Kontrak federal AS"
     if uk is not None and not uk.empty:
         u = uk[~uk["framework"]]
         g = pd.concat([g, pd.DataFrame([{"iso3": "GBR", "nilai_usd": u["nilai_usd"].sum(), "kontrak": len(u),
                                          "sumber": "Kontrak sektor publik Inggris"}])], ignore_index=True)
-    g["negara"] = g["iso3"].map(NAMA_NEGARA).fillna(g["iso3"])
+    g["negara"] = g["iso3"].map(NAMA_NEGARA).fillna(g["iso3"]).fillna(g["nama_asli"])
+    g = g.drop(columns="nama_asli")
     return g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
 
 

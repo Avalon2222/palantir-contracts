@@ -175,7 +175,7 @@ with tab_peta:
 
     negara = analisis.per_negara(trx, uk)
     fig = px.scatter_geo(
-        negara, locations="iso3", size="nilai_usd", color="sumber", hover_name="negara", size_max=60,
+        negara.dropna(subset=["iso3"]), locations="iso3", size="nilai_usd", color="sumber", hover_name="negara", size_max=60,
         color_discrete_map={"Kontrak federal AS": WARNA_AS, "Kontrak sektor publik Inggris": WARNA_UK},
         custom_data=["kontrak", "nilai_usd"], projection="natural earth",
         title="Lokasi pelaksanaan kontrak (ukuran gelembung = nilai, skala akar)",
