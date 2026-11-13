@@ -35,3 +35,20 @@ def test_kumulatif_isi_bulan_kosong_dengan_nol():
     assert k["tanggal"].dt.month.tolist() == [1, 2, 3]
     assert k["nilai_usd"].tolist() == [150.0, 0.0, 20.0]
     assert k["kumulatif_usd"].tolist() == [150.0, 150.0, 170.0]
+
+
+def test_kontrak_terbesar_urut_dan_dibatasi():
+    k = pd.DataFrame({"award_id": list("abcd"), "nilai_usd": [5.0, 50.0, 1.0, 20.0]})
+    assert analisis.kontrak_terbesar(k, n=2)["award_id"].tolist() == ["b", "d"]
+
+
+def test_cari_tidak_peka_huruf_dan_aman_dari_regex():
+    df = pd.DataFrame({"judul": ["Gotham (Army)", "Foundry NHS", None], "instansi": ["DoD", "UK", "C++ team"]})
+    assert analisis.cari(df, "army", ["judul", "instansi"]).index.tolist() == [0]
+    assert analisis.cari(df, "c++", ["judul", "instansi"]).index.tolist() == [2]   # bukan dibaca sebagai regex
+    assert len(analisis.cari(df, "   ", ["judul"])) == 3
+
+
+def test_format_gbp_pakai_simbol_pound():
+    assert analisis.format_gbp(1_500_000) == "£1,5 jt"
+    assert analisis.format_gbp(2.3e9) == "£2,30 M"
