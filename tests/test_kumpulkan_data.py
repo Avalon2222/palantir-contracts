@@ -115,3 +115,30 @@ def test_ambil_kontrak_uk_tanpa_hasil_tetap_tabel_utuh(monkeypatch):
     monkeypatch.setattr(kd, "post", lambda url, payload: {"noticeList": [_pengumuman("x", "Accenture")]})
     df = kd.ambil_kontrak_uk()
     assert df.empty and list(df.columns) == kd.KOLOM_UK
+
+
+def test_ambil_transaksi_as_cuma_palantir_dan_kolom_rapi(monkeypatch):
+    baris = [
+        {"Action Date": "2020-05-02", "Award ID": "B2", "Recipient Name": "PALANTIR USG, INC.", "Transaction Amount": 5.0,
+         "internal_id": 1, "Mod": "P00001"},
+        {"Action Date": "2020-05-01", "Award ID": "A1", "Recipient Name": "Palantir Technologies Inc.",
+         "Transaction Amount": 10.0, "internal_id": 2, "Mod": "0"},
+        {"Action Date": "2020-05-01", "Award ID": "Z9", "Recipient Name": "PALANTIRI CONSULTING", "Transaction Amount": 1.0},
+        {"Action Date": "2020-05-01", "Award ID": "Y8", "Recipient Name": None, "Transaction Amount": 1.0},
+    ]
+    monkeypatch.setattr(kd, "halaman_semua", lambda endpoint, payload: baris)
+    df = kd.ambil_transaksi_as()
+    assert df["award_id"].tolist() == ["A1", "B2"]          # urut tanggal, nama mirip tidak ikut
+    assert set(df.columns) <= set(kd.kolom_transaksi())    # kolom internal API dibuang
+    assert df.loc[0, "nilai_usd"] == 10.0 and df.loc[1, "modifikasi"] == "P00001"
+
+
+def test_ambil_kontrak_as_ganti_nama_kolom(monkeypatch):
+    baris = [{"Award ID": "K1", "Recipient Name": "PALANTIR TECHNOLOGIES INC.", "Award Amount": 9.0,
+              "Total Outlays": 4.0, "internal_id": 7, "agency_slug": "army"},
+             {"Award ID": "K2", "Recipient Name": "LOCKHEED MARTIN", "Award Amount": 99.0, "Total Outlays": 0.0}]
+    monkeypatch.setattr(kd, "halaman_semua", lambda endpoint, payload: baris)
+    df = kd.ambil_kontrak_as()
+    assert df["award_id"].tolist() == ["K1"]
+    assert {"nilai_usd", "dibayar_usd", "penerima"} <= set(df.columns)
+    assert not {"internal_id", "agency_slug"} & set(df.columns)
