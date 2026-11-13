@@ -4,6 +4,7 @@ import importlib.util
 from datetime import date
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import requests
 
@@ -82,3 +83,35 @@ def test_ambil_kurs_rata_rata_per_tahun(monkeypatch):
     df = kd.ambil_kurs(2023)
     assert df["tahun"].tolist() == [2023, 2024]
     assert df["gbp_ke_usd"].tolist() == [1.25, 1.27]
+
+
+def _pengumuman(id_, pemasok, koordinat="51.5,-0.12", **ubah):
+    item = {"id": id_, "noticeIdentifier": f"N-{id_}", "publishedDate": "2024-03-01T10:00:00Z",
+            "awardedDate": "2024-02-20T00:00:00Z", "start": "2024-04-01", "end": "2027-03-31",
+            "organisationName": "NHS England", "title": "Data &amp; analytics  platform",
+            "description": "Federated   data platform", "awardedSupplier": pemasok, "awardedValue": 1000.0,
+            "cpvDescription": "Software", "postcode": "LS1", "coordinates": koordinat, "regionText": "England"}
+    item.update(ubah)
+    return {"item": item}
+
+
+def test_ambil_kontrak_uk_saring_dan_rapikan(monkeypatch):
+    daftar = [
+        _pengumuman("a", "Palantir Technologies UK Ltd"),
+        _pengumuman("b", "Accenture"),                                   # bukan Palantir
+        _pengumuman("c", "A Ltd, B Ltd, Palantir Ltd, C Ltd", koordinat="51.5"),  # framework, koordinat rusak
+    ]
+    monkeypatch.setattr(kd, "post", lambda url, payload: {"noticeList": daftar})
+    df = kd.ambil_kontrak_uk()
+    assert df["id"].tolist() == ["a", "c"]
+    a, c = df.iloc[0], df.iloc[1]
+    assert a["judul"] == "Data & analytics platform" and a["deskripsi"] == "Federated data platform"
+    assert a["lat"] == "51.5" and a["lon"] == "-0.12" and not a["framework"]
+    assert c["framework"] and c["pemasok"].startswith("Palantir (salah satu")
+    assert pd.isna(c["lat"]) and pd.isna(c["lon"])
+
+
+def test_ambil_kontrak_uk_tanpa_hasil_tetap_tabel_utuh(monkeypatch):
+    monkeypatch.setattr(kd, "post", lambda url, payload: {"noticeList": [_pengumuman("x", "Accenture")]})
+    df = kd.ambil_kontrak_uk()
+    assert df.empty and list(df.columns) == kd.KOLOM_UK

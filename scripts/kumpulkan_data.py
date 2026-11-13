@@ -182,6 +182,10 @@ def ambil_idv_as() -> pd.DataFrame:
 # ----------------------------------------------------------------------------
 # 2. CONTRACTS FINDER (INGGRIS)
 # ----------------------------------------------------------------------------
+KOLOM_UK = ["id", "id_pengumuman", "diumumkan", "tanggal_award", "mulai", "selesai", "pembeli", "judul", "deskripsi",
+            "pemasok", "nilai_gbp", "framework", "cpv", "kode_pos", "lat", "lon", "wilayah", "url"]
+
+
 def ambil_kontrak_uk() -> pd.DataFrame:
     """
     Contracts Finder memuat pengumuman kontrak sektor publik Inggris (nilai di atas ~£12 ribu sejak 2015).
@@ -199,7 +203,8 @@ def ambil_kontrak_uk() -> pd.DataFrame:
         if "palantir" not in pemasok.lower():
             continue
         framework = pemasok.count(",") >= 3  # daftar panjang nama pemasok = framework
-        lat, lon = (i.get("coordinates") or ",").split(",")[:2] if i.get("coordinates") else (None, None)
+        bagian = (i.get("coordinates") or "").split(",")
+        lat, lon = (bagian[0].strip(), bagian[1].strip()) if len(bagian) >= 2 else (None, None)
         baris.append({
             "id": i["id"], "id_pengumuman": i.get("noticeIdentifier"),
             "diumumkan": (i.get("publishedDate") or "")[:10], "tanggal_award": (i.get("awardedDate") or "")[:10],
@@ -211,7 +216,8 @@ def ambil_kontrak_uk() -> pd.DataFrame:
             "wilayah": i.get("regionText"),
             "url": f"https://www.contractsfinder.service.gov.uk/Notice/{i['id']}",
         })
-    df = pd.DataFrame(baris)
+    # Kolom ditulis eksplisit supaya hasil pencarian kosong tetap menghasilkan tabel yang utuh.
+    df = pd.DataFrame(baris, columns=KOLOM_UK)
     for kol in ["judul", "deskripsi", "pembeli", "pemasok"]:
         df[kol] = (df[kol].fillna("").str.replace("&amp;", "&", regex=False)
                    .str.replace("&#39;", "'", regex=False).str.replace(r"\s+", " ", regex=True).str.strip())
