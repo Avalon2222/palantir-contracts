@@ -164,3 +164,13 @@ def test_format_usd_dan_gbp_nan_jadi_strip():
     assert analisis.format_usd(float("nan")) == "-"
     assert analisis.format_usd(None) == "-"
     assert analisis.format_gbp(float("nan")) == "-"
+
+
+def test_temuan_utama_data_kosong_tidak_crash():
+    idv = pd.DataFrame({"award_id": pd.Series([], dtype=str), "plafon_usd": pd.Series([], dtype=float),
+                        "diikat_usd": pd.Series([], dtype=float), "multi_vendor": pd.Series([], dtype=bool)})
+    t = analisis.temuan_utama(trx_contoh().iloc[0:0], uk_contoh(), idv)
+    assert t["total_as"] == 0
+    assert t["tahun_rekor"] is None
+    assert t["persen_dua_tahun_terakhir"] == 0.0
+    assert t["instansi_teratas"] == "-"

@@ -171,8 +171,10 @@ def temuan_utama(trx: pd.DataFrame, uk: pd.DataFrame, idv: pd.DataFrame) -> dict
     """Angka-angka kunci untuk kartu ringkasan dan README."""
     porsi = porsi_sektor(trx).set_index("sektor")["persen"]
     per_th = trx.groupby("tahun")["nilai_usd"].sum()
-    th_akhir = int(trx["tahun"].max())
-    dua_th = per_th.loc[[t for t in per_th.index if t >= th_akhir - 1]].sum()
+    total = float(per_th.sum())
+    # Hasil filter bisa kosong; jangan sampai int(NaN) atau bagi nol membuat dashboard crash.
+    th_akhir = int(trx["tahun"].max()) if not per_th.empty else None
+    dua_th = per_th.loc[[t for t in per_th.index if t >= th_akhir - 1]].sum() if th_akhir is not None else 0.0
     instansi = per_instansi(trx)
     plafon = plafon_vs_diikat(idv)
     return {
@@ -182,9 +184,9 @@ def temuan_utama(trx: pd.DataFrame, uk: pd.DataFrame, idv: pd.DataFrame) -> dict
         "jumlah_kontrak_uk": int((~uk["framework"]).sum()),
         "jumlah_instansi": int(instansi["sub_instansi"].nunique()),
         "persen_militer": float(porsi.get("Militer & pertahanan", 0.0)),
-        "persen_dua_tahun_terakhir": float(100 * dua_th / per_th.sum()),
-        "tahun_rekor": int(per_th.idxmax()),
-        "nilai_rekor": float(per_th.max()),
+        "persen_dua_tahun_terakhir": float(100 * dua_th / total) if total > 0 else 0.0,
+        "tahun_rekor": int(per_th.idxmax()) if not per_th.empty else None,
+        "nilai_rekor": float(per_th.max()) if not per_th.empty else 0.0,
         "instansi_teratas": instansi.iloc[0]["nama_pendek"] if not instansi.empty else "-",
         "persen_instansi_teratas": float(instansi.iloc[0]["persen"]) if not instansi.empty else 0.0,
         "konsentrasi_top5": konsentrasi(trx, 5),
