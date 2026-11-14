@@ -158,3 +158,9 @@ def test_cagr_tahun_terbalik_atau_tanpa_data():
     assert analisis.cagr(df, 2022, 2020) is None
     assert analisis.cagr(df, 2019, 2022) is None  # tahun awal tanpa transaksi
     assert analisis.pertumbuhan(df, 2019, 2022) is None
+
+
+def test_format_usd_dan_gbp_nan_jadi_strip():
+    assert analisis.format_usd(float("nan")) == "-"
+    assert analisis.format_usd(None) == "-"
+    assert analisis.format_gbp(float("nan")) == "-"
