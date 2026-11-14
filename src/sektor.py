@@ -54,7 +54,9 @@ ATURAN_UK: list[tuple[str, str]] = [
 
 
 def _cocok(pola: str | None, teks: str) -> bool:
-    return pola is None or re.search(pola, teks or "", flags=re.I) is not None
+    # Sel kosong dari pandas berupa float NaN; `teks or ""` tidak menolong karena NaN bernilai True.
+    teks = teks if isinstance(teks, str) else ""
+    return pola is None or re.search(pola, teks, flags=re.I) is not None
 
 
 def sektor_as(instansi: str, sub_instansi: str = "") -> str:
@@ -111,4 +113,7 @@ SINGKATAN = {
 
 
 def singkat(nama: str) -> str:
+    if not isinstance(nama, str):
+        return ""
+    nama = nama.strip()
     return SINGKATAN.get(nama, nama)
