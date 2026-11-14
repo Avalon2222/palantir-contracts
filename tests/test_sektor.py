@@ -47,3 +47,12 @@ def test_cocok_tanpa_pola_selalu_benar():
     assert sektor._cocok(None, "apa saja")
     assert sektor._cocok(r"army", "Department of the ARMY")   # tidak peka huruf besar
     assert not sektor._cocok(r"army", None)                   # teks kosong aman
+
+
+def test_nilai_kosong_dari_pandas_tidak_error():
+    nan = float("nan")
+    assert sektor.sektor_as(nan, nan) == sektor.SIPIL
+    assert sektor.sektor_as("Department of Defense", nan) == sektor.MILITER
+    assert sektor.sektor_uk(nan) == sektor.SIPIL
+    assert sektor.singkat(nan) == ""
+    assert sektor.singkat(" Internal Revenue Service ") == "IRS"
