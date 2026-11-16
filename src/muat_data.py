@@ -96,7 +96,7 @@ def muat_kontrak_uk() -> pd.DataFrame:
 
 def rapikan_pembeli(nama: str) -> str:
     """'MINISTRY OF DEFENCE' dan 'Ministry of Defence' digabung; huruf kapital semua dijadikan Title Case."""
-    nama = (nama or "").strip()
+    nama = nama.strip() if isinstance(nama, str) else ""
     if nama.isupper() and len(nama) > 4:
         nama = nama.title().replace("Nhs ", "NHS ").replace(" Of ", " of ").replace(" And ", " and ")
         nama = nama.replace(" For ", " for ")
