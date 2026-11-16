@@ -64,8 +64,12 @@ def porsi_sektor(trx: pd.DataFrame) -> pd.DataFrame:
 
 
 def per_instansi(trx: pd.DataFrame, n: int | None = None) -> pd.DataFrame:
-    """Total per sub-instansi (Army, ICE, IRS, ...), dengan tahun pertama dan terakhir dapat kontrak."""
-    g = trx.groupby(["sektor", "instansi", "sub_instansi", "nama_pendek"], as_index=False).agg(
+    """Total per sub-instansi (Army, ICE, IRS, ...), dengan tahun pertama dan terakhir dapat kontrak.
+
+    Baris dengan sub-instansi kosong tetap dihitung (dropna=False), supaya persen dan
+    konsentrasi tidak diam-diam kehilangan sebagian dana.
+    """
+    g = trx.groupby(["sektor", "instansi", "sub_instansi", "nama_pendek"], as_index=False, dropna=False).agg(
         nilai_usd=("nilai_usd", "sum"), transaksi=("nilai_usd", "size"),
         kontrak=("award_id", "nunique"), tahun_pertama=("tahun", "min"), tahun_terakhir=("tahun", "max"))
     g = g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
