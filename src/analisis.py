@@ -51,7 +51,9 @@ def per_tahun_sektor(trx: pd.DataFrame, kolom_tahun: str = "tahun") -> pd.DataFr
     if trx.empty:
         return pd.DataFrame(columns=[kolom_tahun, "sektor", "nilai_usd"])
     tabel = trx.pivot_table(index=kolom_tahun, columns="sektor", values="nilai_usd", aggfunc="sum", fill_value=0.0)
-    tabel = tabel.reindex(columns=URUTAN_SEKTOR, fill_value=0.0)
+    # Sektor di luar URUTAN_SEKTOR ditaruh di belakang, bukan dibuang (total harus tetap sama).
+    lain = [s for s in tabel.columns if s not in URUTAN_SEKTOR]
+    tabel = tabel.reindex(columns=URUTAN_SEKTOR + lain, fill_value=0.0)
     return tabel.reset_index().melt(id_vars=kolom_tahun, var_name="sektor", value_name="nilai_usd")
 
 

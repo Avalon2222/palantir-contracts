@@ -52,6 +52,15 @@ def test_per_tahun_sektor_lengkap_dan_total_sama():
     assert hasil.query("tahun == 2022 and sektor == 'Kesehatan'")["nilai_usd"].iloc[0] == pytest.approx(280.0)
 
 
+def test_per_tahun_sektor_tidak_membuang_sektor_lain():
+    df = trx_contoh()
+    df.loc[0, "sektor"] = "Sektor Baru"
+    hasil = analisis.per_tahun_sektor(df)
+    assert hasil["nilai_usd"].sum() == pytest.approx(df["nilai_usd"].sum())
+    assert hasil.query("sektor == 'Sektor Baru'")["nilai_usd"].sum() == pytest.approx(100.0)
+    assert list(dict.fromkeys(hasil["sektor"]))[-1] == "Sektor Baru"
+
+
 def test_porsi_sektor_100_persen():
     hasil = analisis.porsi_sektor(trx_contoh())
     assert hasil["persen"].sum() == pytest.approx(100.0)
