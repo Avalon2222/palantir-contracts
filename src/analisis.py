@@ -107,10 +107,17 @@ def kumulatif(trx: pd.DataFrame) -> pd.DataFrame:
     return bulanan
 
 
+def _kunci_negara(negara: pd.Series) -> pd.Series:
+    """Nama negara pelaksanaan -> kode ISO-3 bila dikenal, selain itu nama huruf besar. Kosong = AS."""
+    nama = negara.fillna("UNITED STATES").astype(str).str.strip().str.upper()
+    return nama.map(ISO3).fillna(nama)
+
+
 def per_negara_bagian(trx: pd.DataFrame) -> pd.DataFrame:
     """Total per negara bagian tempat pekerjaan dilaksanakan (place of performance)."""
     d = trx.dropna(subset=["negara_bagian"])
-    d = d[d["negara_pelaksanaan"].fillna("UNITED STATES").str.upper().map(ISO3).eq("USA")]
+    # Normalisasi sama dengan per_negara: " United States " tetap dihitung sebagai AS.
+    d = d[_kunci_negara(d["negara_pelaksanaan"]).eq("USA")]
     g = d.groupby("negara_bagian", as_index=False).agg(nilai_usd=("nilai_usd", "sum"),
                                                       kontrak=("award_id", "nunique"))
     return g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
@@ -125,8 +132,7 @@ def per_negara(trx: pd.DataFrame, uk: pd.DataFrame | None = None) -> pd.DataFram
     ikut dijumlahkan ke Amerika Serikat. Lokasi kosong dianggap Amerika Serikat.
     """
     d = trx.copy()
-    nama = d["negara_pelaksanaan"].fillna("UNITED STATES").str.strip().str.upper()
-    d["kunci"] = nama.map(ISO3).fillna(nama)
+    d["kunci"] = _kunci_negara(d["negara_pelaksanaan"])
     g = d.groupby("kunci", as_index=False).agg(nilai_usd=("nilai_usd", "sum"), kontrak=("award_id", "nunique"))
     g["iso3"] = g["kunci"].where(g["kunci"].isin(set(ISO3.values())))
     g["nama_asli"] = g["kunci"].str.title()

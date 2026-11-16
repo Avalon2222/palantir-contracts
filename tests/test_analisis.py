@@ -98,6 +98,15 @@ def test_per_negara_bagian_dan_negara():
     assert neg.set_index("iso3").loc["GBR", "nilai_usd"] == pytest.approx(39.0)  # framework dibuang
 
 
+def test_per_negara_bagian_nama_negara_berspasi():
+    df = trx_contoh()
+    df.loc[0, "negara_pelaksanaan"] = " United States "
+    nb = analisis.per_negara_bagian(df).set_index("negara_bagian")
+    assert nb.loc["CA", "nilai_usd"] == pytest.approx(150.0)
+    neg = analisis.per_negara(df).set_index("iso3")
+    assert neg.loc["USA", "nilai_usd"] == pytest.approx(nb["nilai_usd"].sum())
+
+
 def test_gabung_as_uk():
     g = analisis.gabung_as_uk(trx_contoh(), uk_contoh())
     assert g.query("negara == 'Inggris' and tahun == 2021")["nilai_usd"].iloc[0] == pytest.approx(26.0)
