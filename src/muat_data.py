@@ -94,12 +94,16 @@ def muat_kontrak_uk() -> pd.DataFrame:
     return df
 
 
+SINGKATAN_UK = {"NHS", "HM", "UK", "MOD", "HMRC", "DVLA", "GDS", "CSU", "ICB", "CCG", "DWP", "FCDO"}
+
+
 def rapikan_pembeli(nama: str) -> str:
     """'MINISTRY OF DEFENCE' dan 'Ministry of Defence' digabung; huruf kapital semua dijadikan Title Case."""
     nama = nama.strip() if isinstance(nama, str) else ""
     if nama.isupper() and len(nama) > 4:
-        nama = nama.title().replace("Nhs ", "NHS ").replace(" Of ", " of ").replace(" And ", " and ")
-        nama = nama.replace(" For ", " for ")
+        # Singkatan resmi tetap huruf besar: "HM TREASURY" -> "HM Treasury", bukan "Hm Treasury".
+        kata = [k if k in SINGKATAN_UK else k.title() for k in nama.split(" ")]
+        nama = " ".join(kata).replace(" Of ", " of ").replace(" And ", " and ").replace(" For ", " for ")
     alias = {"Defra": "Department for Environment, Food & Rural Affairs", "GDS": "Government Digital Service",
              "NHS North of England CSU": "North of England Commissioning Support",
              "North of England Commissioning Support": "North of England Commissioning Support"}

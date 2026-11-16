@@ -58,6 +58,14 @@ def test_rapikan_pembeli():
     assert muat_data.rapikan_pembeli("Defra").startswith("Department for Environment")
 
 
+def test_rapikan_pembeli_jaga_singkatan():
+    assert muat_data.rapikan_pembeli("HM REVENUE AND CUSTOMS") == "HM Revenue and Customs"
+    assert muat_data.rapikan_pembeli("UK HEALTH SECURITY AGENCY") == "UK Health Security Agency"
+    assert muat_data.rapikan_pembeli("NORTHUMBRIA HEALTHCARE NHS FOUNDATION TRUST") == \
+        "Northumbria Healthcare NHS Foundation Trust"
+    assert muat_data.rapikan_pembeli(float("nan")) == ""
+
+
 def test_meta():
     meta = muat_data.muat_meta()
     assert meta.get("transaksi_as", 0) > 0
