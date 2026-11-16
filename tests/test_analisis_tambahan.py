@@ -1,6 +1,7 @@
 """Tes tambahan untuk src/analisis.py: konsentrasi klien, kumulatif bulanan, kontrak terbesar, dan pencarian."""
 
 import pandas as pd
+import pytest
 
 from src import analisis
 
@@ -52,3 +53,14 @@ def test_cari_tidak_peka_huruf_dan_aman_dari_regex():
 def test_format_gbp_pakai_simbol_pound():
     assert analisis.format_gbp(1_500_000) == "£1,5 jt"
     assert analisis.format_gbp(2.3e9) == "£2,30 M"
+
+
+def test_per_instansi_tidak_membuang_sub_instansi_kosong():
+    trx = pd.DataFrame({
+        "sektor": ["Militer", "Militer"], "instansi": ["DoD", "DoD"],
+        "sub_instansi": ["Army", None], "nama_pendek": ["Army", None],
+        "nilai_usd": [10.0, 5.0], "award_id": ["a", "b"], "tahun": [2020, 2021],
+    })
+    g = analisis.per_instansi(trx)
+    assert g["nilai_usd"].sum() == 15.0
+    assert g["persen"].iloc[0] == pytest.approx(100 * 10 / 15)

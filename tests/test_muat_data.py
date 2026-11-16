@@ -85,3 +85,8 @@ def test_muat_meta_berkas_rusak_atau_hilang(tmp_path, monkeypatch):
     assert muat_data.muat_meta() == {}
     (tmp_path / "META.json").write_text("{bukan json", encoding="utf-8")
     assert muat_data.muat_meta() == {}
+
+
+def test_rapikan_pembeli_nilai_kosong():
+    assert muat_data.rapikan_pembeli(None) == ""
+    assert muat_data.rapikan_pembeli(float("nan")) == ""
