@@ -29,8 +29,8 @@ SATUAN = [(1, 0, ""), (1e3, 0, " rb"), (1e6, 1, " jt"), (1e9, 2, " M")]
 
 def format_usd(x: float) -> str:
     """1_234_567_890 -> '$1,23 M' (miliar), 45_600_000 -> '$45,6 jt'. Gaya angka Indonesia."""
-    if pd.isna(x):
-        return "-"  # tanpa ini hasilnya "$nan"
+    if pd.isna(x) or x in (float("inf"), float("-inf")):
+        return "-"  # tanpa ini hasilnya "$nan" atau "$inf M" (mis. rasio dibagi nol)
     tanda = "-" if x < 0 else ""
     x = abs(x)
     i = max((j for j, (batas, _, _) in enumerate(SATUAN) if x >= batas), default=0)
