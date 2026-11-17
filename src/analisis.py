@@ -38,6 +38,8 @@ def format_usd(x: float) -> str:
     while i < len(SATUAN) - 1 and round(x / SATUAN[i][0], SATUAN[i][1]) >= 1000:
         i += 1
     batas, desimal, akhiran = SATUAN[i]
+    if round(x / batas, desimal) == 0:
+        tanda = ""  # koreksi kecil seperti -0,40 dolar dibulatkan jadi "$0", bukan "-$0"
     teks = f"{x / batas:,.{desimal}f}{akhiran}"
     return tanda + "$" + teks.replace(",", "#").replace(".", ",").replace("#", ".")
 
