@@ -192,3 +192,8 @@ def test_temuan_utama_data_kosong_tidak_crash():
     assert t["tahun_rekor"] is None
     assert t["persen_dua_tahun_terakhir"] == 0.0
     assert t["instansi_teratas"] == "-"
+
+
+def test_format_usd_negatif_kecil_tidak_jadi_minus_nol():
+    assert analisis.format_usd(-0.4) == "$0"
+    assert analisis.format_usd(-0.6) == "-$1"
