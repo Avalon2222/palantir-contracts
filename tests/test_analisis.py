@@ -197,3 +197,8 @@ def test_temuan_utama_data_kosong_tidak_crash():
 def test_format_usd_negatif_kecil_tidak_jadi_minus_nol():
     assert analisis.format_usd(-0.4) == "$0"
     assert analisis.format_usd(-0.6) == "-$1"
+
+
+def test_format_usd_tak_hingga_jadi_strip():
+    assert analisis.format_usd(float("inf")) == "-"
+    assert analisis.format_gbp(float("-inf")) == "-"
