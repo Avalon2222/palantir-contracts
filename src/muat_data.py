@@ -102,7 +102,8 @@ def rapikan_pembeli(nama: str) -> str:
     nama = nama.strip() if isinstance(nama, str) else ""
     if nama.isupper() and len(nama) > 4:
         # Singkatan resmi tetap huruf besar: "HM TREASURY" -> "HM Treasury", bukan "Hm Treasury".
-        kata = [k if k in SINGKATAN_UK else k.title() for k in nama.split(" ")]
+        # Tanda baca di sekitar singkatan diabaikan saat dicek: "(MOD)" dan "NHS," tetap huruf besar.
+        kata = [k if k.strip("(),.&/") in SINGKATAN_UK else k.title() for k in nama.split(" ")]
         nama = " ".join(kata).replace(" Of ", " of ").replace(" And ", " and ").replace(" For ", " for ")
     alias = {"Defra": "Department for Environment, Food & Rural Affairs", "GDS": "Government Digital Service",
              "NHS North of England CSU": "North of England Commissioning Support",

@@ -98,3 +98,8 @@ def test_muat_meta_berkas_rusak_atau_hilang(tmp_path, monkeypatch):
 def test_rapikan_pembeli_nilai_kosong():
     assert muat_data.rapikan_pembeli(None) == ""
     assert muat_data.rapikan_pembeli(float("nan")) == ""
+
+
+def test_rapikan_pembeli_singkatan_bertanda_baca():
+    assert muat_data.rapikan_pembeli("DEFENCE DIGITAL (MOD)") == "Defence Digital (MOD)"
+    assert muat_data.rapikan_pembeli("NHS, ENGLAND") == "NHS, England"
