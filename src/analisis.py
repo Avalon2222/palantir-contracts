@@ -117,7 +117,10 @@ def _kunci_negara(negara: pd.Series) -> pd.Series:
 
 def per_negara_bagian(trx: pd.DataFrame) -> pd.DataFrame:
     """Total per negara bagian tempat pekerjaan dilaksanakan (place of performance)."""
-    d = trx.dropna(subset=["negara_bagian"])
+    d = trx.dropna(subset=["negara_bagian"]).copy()
+    # Kode negara bagian dirapikan: " ca" dan "CA" adalah satu negara bagian, sel kosong dibuang.
+    d["negara_bagian"] = d["negara_bagian"].astype(str).str.strip().str.upper()
+    d = d[d["negara_bagian"] != ""]
     # Normalisasi sama dengan per_negara: " United States " tetap dihitung sebagai AS.
     d = d[_kunci_negara(d["negara_pelaksanaan"]).eq("USA")]
     g = d.groupby("negara_bagian", as_index=False).agg(nilai_usd=("nilai_usd", "sum"),
