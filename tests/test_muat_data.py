@@ -103,3 +103,9 @@ def test_rapikan_pembeli_nilai_kosong():
 def test_rapikan_pembeli_singkatan_bertanda_baca():
     assert muat_data.rapikan_pembeli("DEFENCE DIGITAL (MOD)") == "Defence Digital (MOD)"
     assert muat_data.rapikan_pembeli("NHS, ENGLAND") == "NHS, England"
+
+
+def test_rapikan_pembeli_kata_sambung_lain():
+    assert (muat_data.rapikan_pembeli("SECRETARY OF STATE FOR THE HOME DEPARTMENT")
+            == "Secretary of State for the Home Department")
+    assert muat_data.rapikan_pembeli("THE CABINET OFFICE") == "The Cabinet Office"
