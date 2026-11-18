@@ -7,6 +7,7 @@ Fungsi di sini murni pandas (tanpa Streamlit) supaya bisa diuji dengan pytest.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -110,13 +111,18 @@ def muat_kontrak_uk() -> pd.DataFrame:
 SINGKATAN_UK = {"NHS", "HM", "UK", "MOD", "HMRC", "DVLA", "GDS", "CSU", "ICB", "CCG", "DWP", "FCDO"}
 
 
+def _judul(kata: str) -> str:
+    """Seperti str.title(), tetapi huruf setelah apostrof tetap kecil: "MAJESTY'S" -> "Majesty's"."""
+    return re.sub(r"[A-Za-z]+(?:'[A-Za-z]+)?", lambda m: m.group(0).capitalize(), kata)
+
+
 def rapikan_pembeli(nama: str) -> str:
     """'MINISTRY OF DEFENCE' dan 'Ministry of Defence' digabung; huruf kapital semua dijadikan Title Case."""
     nama = nama.strip() if isinstance(nama, str) else ""
     if nama.isupper() and len(nama) > 4:
         # Singkatan resmi tetap huruf besar: "HM TREASURY" -> "HM Treasury", bukan "Hm Treasury".
         # Tanda baca di sekitar singkatan diabaikan saat dicek: "(MOD)" dan "NHS," tetap huruf besar.
-        kata = [k if k.strip("(),.&/") in SINGKATAN_UK else k.title() for k in nama.split(" ")]
+        kata = [k if k.strip("(),.&/") in SINGKATAN_UK else _judul(k) for k in nama.split(" ")]
         nama = " ".join(kata)
         # Kata sambung di tengah nama ditulis kecil, seperti di situs pemerintah Inggris.
         for sambung in ("Of", "And", "For", "The", "In", "On", "To"):
