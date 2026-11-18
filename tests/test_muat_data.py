@@ -109,3 +109,11 @@ def test_rapikan_pembeli_kata_sambung_lain():
     assert (muat_data.rapikan_pembeli("SECRETARY OF STATE FOR THE HOME DEPARTMENT")
             == "Secretary of State for the Home Department")
     assert muat_data.rapikan_pembeli("THE CABINET OFFICE") == "The Cabinet Office"
+
+
+def test_kurs_tahunan_pakai_tahun_terdekat():
+    import pandas as pd
+
+    kurs = pd.DataFrame({"tahun": [2016, 2014, 2015], "gbp_ke_usd": [1.35, 1.55, 1.52]})
+    hasil = muat_data.kurs_tahunan(pd.Series([2012.0, 2015.0, 2030.0, float("nan")]), kurs)
+    assert hasil.tolist() == [1.55, 1.52, 1.35, 1.35]
