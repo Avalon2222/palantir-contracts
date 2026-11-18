@@ -210,3 +210,11 @@ def test_per_negara_bagian_kode_dirapikan():
     hasil = analisis.per_negara_bagian(trx).set_index("negara_bagian")
     assert list(hasil.index) == ["CA", "VA"]
     assert hasil.loc["CA", "nilai_usd"] == 3.0 and hasil.loc["CA", "kontrak"] == 2
+
+
+def test_per_instansi_n_nol_kosong():
+    trx = pd.DataFrame({"sektor": ["A", "B"], "instansi": ["X", "Y"], "sub_instansi": ["X1", "Y1"],
+                        "nama_pendek": ["X1", "Y1"], "nilai_usd": [5.0, 3.0], "award_id": ["a", "b"],
+                        "tahun": [2024, 2025]})
+    assert analisis.per_instansi(trx, n=0).empty
+    assert len(analisis.per_instansi(trx)) == 2

@@ -78,7 +78,8 @@ def per_instansi(trx: pd.DataFrame, n: int | None = None) -> pd.DataFrame:
         kontrak=("award_id", "nunique"), tahun_pertama=("tahun", "min"), tahun_terakhir=("tahun", "max"))
     g = g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
     g["persen"] = 100 * g["nilai_usd"] / g["nilai_usd"].sum()
-    return g.head(n) if n else g
+    # n=0 berarti nol baris; hanya None yang berarti tanpa batas.
+    return g if n is None else g.head(max(n, 0))
 
 
 def konsentrasi(trx: pd.DataFrame, n: int = 5) -> float:
