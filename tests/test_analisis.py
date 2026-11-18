@@ -202,3 +202,11 @@ def test_format_usd_negatif_kecil_tidak_jadi_minus_nol():
 def test_format_usd_tak_hingga_jadi_strip():
     assert analisis.format_usd(float("inf")) == "-"
     assert analisis.format_gbp(float("-inf")) == "-"
+
+
+def test_per_negara_bagian_kode_dirapikan():
+    trx = pd.DataFrame({"negara_bagian": ["CA", " ca", "VA", "  "], "negara_pelaksanaan": ["USA"] * 4,
+                        "nilai_usd": [1.0, 2.0, 3.0, 4.0], "award_id": ["a", "b", "c", "d"]})
+    hasil = analisis.per_negara_bagian(trx).set_index("negara_bagian")
+    assert list(hasil.index) == ["CA", "VA"]
+    assert hasil.loc["CA", "nilai_usd"] == 3.0 and hasil.loc["CA", "kontrak"] == 2
