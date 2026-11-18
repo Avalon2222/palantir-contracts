@@ -73,6 +73,20 @@ def muat_kurs() -> pd.DataFrame:
     return pd.read_csv(DATA / "kurs_gbp_usd.csv")
 
 
+def kurs_tahunan(tahun: pd.Series, kurs: pd.DataFrame) -> pd.Series:
+    """Kurs GBP->USD untuk tiap tahun. Tahun di luar tabel memakai tahun terdekat yang ada.
+
+    Sebelumnya cadangannya baris terakhir CSV, yang belum tentu tahun terbaru kalau urutannya
+    berubah, dan kontrak sebelum tahun pertama tabel ikut memakai kurs paling baru.
+    """
+    k = kurs.dropna(subset=["tahun", "gbp_ke_usd"]).sort_values("tahun").set_index("tahun")["gbp_ke_usd"]
+    hasil = tahun.map(k)
+    kosong = hasil.isna() & tahun.notna()
+    if kosong.any():
+        hasil[kosong] = tahun[kosong].clip(k.index.min(), k.index.max()).map(k)
+    return hasil.fillna(k.iloc[-1])
+
+
 def muat_kontrak_uk() -> pd.DataFrame:
     """
     Satu baris = satu pengumuman kontrak di Contracts Finder.
@@ -88,8 +102,7 @@ def muat_kontrak_uk() -> pd.DataFrame:
     df["pembeli"] = df["pembeli"].fillna("").str.strip()
     df["pembeli_rapi"] = df["pembeli"].map(rapikan_pembeli)
     df["sektor"] = df["pembeli"].map(sektor.sektor_uk)
-    kurs = muat_kurs().set_index("tahun")["gbp_ke_usd"]
-    df["kurs"] = df["tahun"].map(kurs).fillna(kurs.iloc[-1])
+    df["kurs"] = kurs_tahunan(df["tahun"], muat_kurs())
     df["nilai_usd"] = df["nilai_gbp"] * df["kurs"]
     return df
 
