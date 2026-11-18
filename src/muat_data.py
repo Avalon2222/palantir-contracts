@@ -104,7 +104,10 @@ def rapikan_pembeli(nama: str) -> str:
         # Singkatan resmi tetap huruf besar: "HM TREASURY" -> "HM Treasury", bukan "Hm Treasury".
         # Tanda baca di sekitar singkatan diabaikan saat dicek: "(MOD)" dan "NHS," tetap huruf besar.
         kata = [k if k.strip("(),.&/") in SINGKATAN_UK else k.title() for k in nama.split(" ")]
-        nama = " ".join(kata).replace(" Of ", " of ").replace(" And ", " and ").replace(" For ", " for ")
+        nama = " ".join(kata)
+        # Kata sambung di tengah nama ditulis kecil, seperti di situs pemerintah Inggris.
+        for sambung in ("Of", "And", "For", "The", "In", "On", "To"):
+            nama = nama.replace(f" {sambung} ", f" {sambung.lower()} ")
     alias = {"Defra": "Department for Environment, Food & Rural Affairs", "GDS": "Government Digital Service",
              "NHS North of England CSU": "North of England Commissioning Support",
              "North of England Commissioning Support": "North of England Commissioning Support"}
