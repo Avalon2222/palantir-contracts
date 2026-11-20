@@ -118,7 +118,11 @@ def _judul(kata: str) -> str:
 
 def rapikan_pembeli(nama: str) -> str:
     """'MINISTRY OF DEFENCE' dan 'Ministry of Defence' digabung; huruf kapital semua dijadikan Title Case."""
-    nama = nama.strip() if isinstance(nama, str) else ""
+    # Spasi ganda/tab dari CSV dirapikan dulu: "MINISTRY  OF DEFENCE" sama dengan "MINISTRY OF DEFENCE".
+    nama = " ".join(nama.split()) if isinstance(nama, str) else ""
+    # Nama yang ditulis huruf kecil semua diperlakukan sama seperti yang huruf besar semua.
+    if nama.islower() and len(nama) > 4:
+        nama = nama.upper()
     if nama.isupper() and len(nama) > 4:
         # Singkatan resmi tetap huruf besar: "HM TREASURY" -> "HM Treasury", bukan "Hm Treasury".
         # Tanda baca di sekitar singkatan diabaikan saat dicek: "(MOD)" dan "NHS," tetap huruf besar.
