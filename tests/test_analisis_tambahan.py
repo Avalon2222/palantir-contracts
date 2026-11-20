@@ -64,3 +64,10 @@ def test_per_instansi_tidak_membuang_sub_instansi_kosong():
     g = analisis.per_instansi(trx)
     assert g["nilai_usd"].sum() == 15.0
     assert g["persen"].iloc[0] == pytest.approx(100 * 10 / 15)
+
+
+def test_per_negara_lokasi_spasi_saja_dianggap_as():
+    trx = pd.DataFrame({"negara_pelaksanaan": ["", "   ", "UNITED  STATES", None, "Germany"],
+                        "nilai_usd": [1.0, 2.0, 3.0, 4.0, 5.0], "award_id": ["a", "b", "c", "d", "e"]})
+    hasil = analisis.per_negara(trx).set_index("negara")["nilai_usd"].to_dict()
+    assert hasil == {"Amerika Serikat": 10.0, "Jerman": 5.0}
