@@ -112,7 +112,8 @@ def kumulatif(trx: pd.DataFrame) -> pd.DataFrame:
 
 def _kunci_negara(negara: pd.Series) -> pd.Series:
     """Nama negara pelaksanaan -> kode ISO-3 bila dikenal, selain itu nama huruf besar. Kosong = AS."""
-    nama = negara.fillna("UNITED STATES").astype(str).str.strip().str.upper()
+    # Spasi ganda dirapikan, dan sel berisi spasi saja juga dianggap kosong (= AS), bukan negara "".
+    nama = negara.fillna("").astype(str).str.split().str.join(" ").str.upper().replace("", "UNITED STATES")
     return nama.map(ISO3).fillna(nama)
 
 
