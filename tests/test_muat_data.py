@@ -123,3 +123,9 @@ def test_rapikan_pembeli_apostrof_dan_tanda_hubung():
     assert muat_data.rapikan_pembeli("HER MAJESTY'S TREASURY") == "Her Majesty's Treasury"
     assert muat_data.rapikan_pembeli("NORTH-EAST LINCOLNSHIRE COUNCIL") == "North-East Lincolnshire Council"
     assert muat_data.rapikan_pembeli("MINISTRY OF DEFENCE (MOD)") == "Ministry of Defence (MOD)"
+
+
+def test_rapikan_pembeli_spasi_ganda_dan_huruf_kecil_digabung():
+    varian = ["MINISTRY  OF DEFENCE", "ministry of defence", "Ministry of Defence", " MINISTRY OF\tDEFENCE "]
+    assert {muat_data.rapikan_pembeli(n) for n in varian} == {"Ministry of Defence"}
+    assert muat_data.rapikan_pembeli("nhs england") == "NHS England"
