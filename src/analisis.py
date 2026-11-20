@@ -105,7 +105,15 @@ def cagr(trx: pd.DataFrame, awal: int, akhir: int) -> float | None:
 
 def kumulatif(trx: pd.DataFrame) -> pd.DataFrame:
     """Total berjalan per bulan, untuk garis 'sudah berapa banyak sejak awal'."""
-    bulanan = (trx.set_index("tanggal")["nilai_usd"].resample("MS").sum().rename("nilai_usd").reset_index())
+    # resample membuang baris bertanggal NaT, jadi totalnya diam-diam lebih kecil dari total_as.
+    # Transaksi tanpa tanggal tapi bertahun ditaruh di awal tahunnya; yang tanpa keduanya dilewati.
+    tanggal = pd.to_datetime(trx["tanggal"], errors="coerce")
+    if "tahun" in trx:
+        dari_tahun = pd.to_datetime(pd.to_numeric(trx["tahun"], errors="coerce").astype("Int64").astype("string") + "-01-01",
+                                    errors="coerce")
+        tanggal = tanggal.fillna(dari_tahun)
+    d = trx.assign(tanggal=tanggal).dropna(subset=["tanggal"])
+    bulanan = (d.set_index("tanggal")["nilai_usd"].resample("MS").sum().rename("nilai_usd").reset_index())
     bulanan["kumulatif_usd"] = bulanan["nilai_usd"].cumsum()
     return bulanan
 
