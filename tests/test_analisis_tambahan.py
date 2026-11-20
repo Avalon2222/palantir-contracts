@@ -71,3 +71,11 @@ def test_per_negara_lokasi_spasi_saja_dianggap_as():
                         "nilai_usd": [1.0, 2.0, 3.0, 4.0, 5.0], "award_id": ["a", "b", "c", "d", "e"]})
     hasil = analisis.per_negara(trx).set_index("negara")["nilai_usd"].to_dict()
     assert hasil == {"Amerika Serikat": 10.0, "Jerman": 5.0}
+
+
+def test_kumulatif_transaksi_tanpa_tanggal_tidak_hilang():
+    trx = pd.DataFrame({"tanggal": pd.to_datetime(["2024-01-05", None, "2024-03-01", None]),
+                        "tahun": [2024, 2024, 2024, None], "nilai_usd": [1.0, 2.0, 3.0, 4.0]})
+    hasil = analisis.kumulatif(trx)
+    assert hasil["kumulatif_usd"].iloc[-1] == 6.0   # baris tanpa tanggal dan tahun saja yang dilewati
+    assert hasil.loc[hasil["tanggal"] == pd.Timestamp("2024-01-01"), "nilai_usd"].item() == 3.0
