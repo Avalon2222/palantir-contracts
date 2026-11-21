@@ -82,6 +82,9 @@ def kurs_tahunan(tahun: pd.Series, kurs: pd.DataFrame) -> pd.Series:
     berubah, dan kontrak sebelum tahun pertama tabel ikut memakai kurs paling baru.
     """
     k = kurs.dropna(subset=["tahun", "gbp_ke_usd"]).sort_values("tahun").set_index("tahun")["gbp_ke_usd"]
+    if k.empty:
+        # Tanpa satu pun kurs, nilai USD memang tidak bisa dihitung; k.iloc[-1] di bawah akan IndexError.
+        return pd.Series(float("nan"), index=tahun.index)
     hasil = tahun.map(k)
     kosong = hasil.isna() & tahun.notna()
     if kosong.any():
