@@ -36,7 +36,8 @@ def tambah_sektor_as(df: pd.DataFrame) -> pd.DataFrame:
 def muat_transaksi_as() -> pd.DataFrame:
     """Satu baris = satu aksi kontrak (award baru, modifikasi, tambahan dana, atau koreksi negatif)."""
     df = pd.read_csv(DATA / "as_transaksi.csv", dtype={"kode_naics": "string", "modifikasi": "string"})
-    df["tanggal"] = pd.to_datetime(df["tanggal"])
+    # Satu tanggal rusak jangan sampai menggagalkan seluruh dashboard (berkas lain juga memakai coerce).
+    df["tanggal"] = pd.to_datetime(df["tanggal"], errors="coerce")
     df["tahun"] = df["tanggal"].dt.year
     # Tahun fiskal federal AS dimulai 1 Oktober: 15 Okt 2025 masuk FY2026.
     df["tahun_fiskal"] = df["tahun"] + (df["tanggal"].dt.month >= 10).astype(int)

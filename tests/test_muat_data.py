@@ -129,3 +129,18 @@ def test_rapikan_pembeli_spasi_ganda_dan_huruf_kecil_digabung():
     varian = ["MINISTRY  OF DEFENCE", "ministry of defence", "Ministry of Defence", " MINISTRY OF\tDEFENCE "]
     assert {muat_data.rapikan_pembeli(n) for n in varian} == {"Ministry of Defence"}
     assert muat_data.rapikan_pembeli("nhs england") == "NHS England"
+
+
+def test_transaksi_tanggal_rusak_tidak_menggagalkan(tmp_path, monkeypatch):
+    kolom = ("tanggal,award_id,nilai_usd,instansi,sub_instansi,deskripsi,id_usaspending\n")
+    (tmp_path / "as_transaksi.csv").write_text(
+        kolom
+        + "2024-10-05,A1,100,Department of Defense,Department of the Army,x,ID1\n"
+        + "bukan-tanggal,A2,50,Department of Defense,Department of the Army,y,ID2\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_transaksi_as()
+    assert len(df) == 2
+    assert df.loc[0, "tahun_fiskal"] == 2025
+    assert pd.isna(df.loc[1, "tanggal"])
