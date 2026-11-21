@@ -157,3 +157,9 @@ def test_momen_tanggal_rusak_dibuang(tmp_path, monkeypatch):
     monkeypatch.setattr(muat_data, "DATA", tmp_path)
     df = muat_data.muat_momen()
     assert list(df["judul"]) == ["A", "B"]
+
+
+def test_kurs_tahunan_tabel_kosong_jadi_nan():
+    kurs = pd.DataFrame({"tahun": [2020], "gbp_ke_usd": [None]})
+    hasil = muat_data.kurs_tahunan(pd.Series([2020, 2021]), kurs)
+    assert hasil.isna().all() and len(hasil) == 2
