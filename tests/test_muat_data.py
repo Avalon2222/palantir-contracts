@@ -144,3 +144,16 @@ def test_transaksi_tanggal_rusak_tidak_menggagalkan(tmp_path, monkeypatch):
     assert len(df) == 2
     assert df.loc[0, "tahun_fiskal"] == 2025
     assert pd.isna(df.loc[1, "tanggal"])
+
+
+def test_momen_tanggal_rusak_dibuang(tmp_path, monkeypatch):
+    (tmp_path / "momen_penting.csv").write_text(
+        "tanggal,negara,judul,keterangan,jenis,sumber\n"
+        "2020-01-02,AS,B,x,Kontrak besar,https://b\n"
+        "31/02/2019,AS,Rusak,x,Kontrak besar,https://r\n"
+        "2019-01-01,AS,A,x,Kontrak besar,https://a\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_momen()
+    assert list(df["judul"]) == ["A", "B"]
