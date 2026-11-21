@@ -140,5 +140,6 @@ def rapikan_pembeli(nama: str) -> str:
 
 def muat_momen() -> pd.DataFrame:
     df = pd.read_csv(DATA / "momen_penting.csv")
-    df["tanggal"] = pd.to_datetime(df["tanggal"])
-    return df.sort_values("tanggal").reset_index(drop=True)
+    # Momen dengan tanggal rusak tidak bisa digambar di linimasa; buang saja daripada aplikasi gagal.
+    df["tanggal"] = pd.to_datetime(df["tanggal"], errors="coerce")
+    return df.dropna(subset=["tanggal"]).sort_values("tanggal").reset_index(drop=True)
