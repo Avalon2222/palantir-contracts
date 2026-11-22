@@ -223,3 +223,7 @@ def test_per_instansi_n_nol_kosong():
 def test_konsentrasi_n_negatif_nol():
     assert analisis.konsentrasi(trx_contoh(), -1) == 0.0
     assert analisis.konsentrasi(trx_contoh(), 0) == 0.0
+
+
+def test_kontrak_terbesar_n_negatif_kosong():
+    assert analisis.kontrak_terbesar(trx_contoh(), n=-1).empty
