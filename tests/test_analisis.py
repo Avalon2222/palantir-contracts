@@ -218,3 +218,8 @@ def test_per_instansi_n_nol_kosong():
                         "tahun": [2024, 2025]})
     assert analisis.per_instansi(trx, n=0).empty
     assert len(analisis.per_instansi(trx)) == 2
+
+
+def test_konsentrasi_n_negatif_nol():
+    assert analisis.konsentrasi(trx_contoh(), -1) == 0.0
+    assert analisis.konsentrasi(trx_contoh(), 0) == 0.0
