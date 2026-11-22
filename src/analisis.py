@@ -85,7 +85,8 @@ def per_instansi(trx: pd.DataFrame, n: int | None = None) -> pd.DataFrame:
 def konsentrasi(trx: pd.DataFrame, n: int = 5) -> float:
     """Persentase dana dari n sub-instansi terbesar. Tinggi = Palantir bergantung pada sedikit klien."""
     g = per_instansi(trx)
-    return float(g["persen"].head(n).sum()) if not g.empty else 0.0
+    # head(-n) menjumlahkan hampir semua instansi; n negatif dianggap nol.
+    return float(g["persen"].head(max(n, 0)).sum()) if not g.empty else 0.0
 
 
 def pertumbuhan(trx: pd.DataFrame, awal: int, akhir: int) -> float | None:
