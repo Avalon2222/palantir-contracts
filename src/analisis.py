@@ -76,7 +76,9 @@ def per_instansi(trx: pd.DataFrame, n: int | None = None) -> pd.DataFrame:
     g = trx.groupby(["sektor", "instansi", "sub_instansi", "nama_pendek"], as_index=False, dropna=False).agg(
         nilai_usd=("nilai_usd", "sum"), transaksi=("nilai_usd", "size"),
         kontrak=("award_id", "nunique"), tahun_pertama=("tahun", "min"), tahun_terakhir=("tahun", "max"))
-    g = g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
+    # Nilai seri diurutkan menurut nama pendek, supaya "instansi teratas" dan grafik tidak acak.
+    g = g[g["nilai_usd"] > 0].sort_values(["nilai_usd", "nama_pendek"], ascending=[False, True],
+                                          kind="mergesort").reset_index(drop=True)
     g["persen"] = 100 * g["nilai_usd"] / g["nilai_usd"].sum()
     # n=0 berarti nol baris; hanya None yang berarti tanpa batas.
     return g if n is None else g.head(max(n, 0))
