@@ -136,7 +136,9 @@ def per_negara_bagian(trx: pd.DataFrame) -> pd.DataFrame:
     d = d[_kunci_negara(d["negara_pelaksanaan"]).eq("USA")]
     g = d.groupby("negara_bagian", as_index=False).agg(nilai_usd=("nilai_usd", "sum"),
                                                       kontrak=("award_id", "nunique"))
-    return g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
+    # Nilai seri diurutkan menurut kode negara bagian supaya tabel dan grafik tidak acak.
+    g = g[g["nilai_usd"] > 0].sort_values(["nilai_usd", "negara_bagian"], ascending=[False, True], kind="mergesort")
+    return g.reset_index(drop=True)
 
 
 def per_negara(trx: pd.DataFrame, uk: pd.DataFrame | None = None) -> pd.DataFrame:
@@ -160,7 +162,8 @@ def per_negara(trx: pd.DataFrame, uk: pd.DataFrame | None = None) -> pd.DataFram
                                          "sumber": "Kontrak sektor publik Inggris"}])], ignore_index=True)
     g["negara"] = g["iso3"].map(NAMA_NEGARA).fillna(g["iso3"]).fillna(g["nama_asli"])
     g = g.drop(columns="nama_asli")
-    return g[g["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False).reset_index(drop=True)
+    g = g[g["nilai_usd"] > 0].sort_values(["nilai_usd", "negara"], ascending=[False, True], kind="mergesort")
+    return g.reset_index(drop=True)
 
 
 def gabung_as_uk(trx: pd.DataFrame, uk: pd.DataFrame) -> pd.DataFrame:
