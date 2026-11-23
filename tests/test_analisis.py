@@ -240,3 +240,9 @@ def test_per_negara_bagian_dan_negara_seri_urut_nama():
     pn = analisis.per_negara(negara)
     tiga = pn[pn["nilai_usd"] == 300.0]["negara"].tolist()
     assert tiga == sorted(tiga)
+
+
+def test_kontrak_terbesar_nilai_seri_tetap_urutan_asli():
+    kontrak = pd.DataFrame({"award_id": [f"A{i:02d}" for i in range(60)],
+                            "nilai_usd": [100.0 * (i % 3 + 1) for i in range(60)]})
+    assert analisis.kontrak_terbesar(kontrak, 4)["award_id"].tolist() == ["A02", "A05", "A08", "A11"]

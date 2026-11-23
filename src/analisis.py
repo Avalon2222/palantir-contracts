@@ -186,7 +186,9 @@ def plafon_vs_diikat(idv: pd.DataFrame, termasuk_multi: bool = False) -> pd.Data
 
 
 def kontrak_terbesar(kontrak: pd.DataFrame, n: int = 10) -> pd.DataFrame:
-    return kontrak.sort_values("nilai_usd", ascending=False).head(max(n, 0)).reset_index(drop=True)
+    # mergesort: kontrak bernilai sama tetap dalam urutan aslinya, bukan diacak quicksort.
+    urut = kontrak.sort_values("nilai_usd", ascending=False, kind="mergesort")
+    return urut.head(max(n, 0)).reset_index(drop=True)
 
 
 def cari(df: pd.DataFrame, kata: str, kolom: list[str]) -> pd.DataFrame:
