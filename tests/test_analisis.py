@@ -246,3 +246,13 @@ def test_kontrak_terbesar_nilai_seri_tetap_urutan_asli():
     kontrak = pd.DataFrame({"award_id": [f"A{i:02d}" for i in range(60)],
                             "nilai_usd": [100.0 * (i % 3 + 1) for i in range(60)]})
     assert analisis.kontrak_terbesar(kontrak, 4)["award_id"].tolist() == ["A02", "A05", "A08", "A11"]
+
+
+def test_per_instansi_nilai_seri_urut_nama_pendek():
+    trx = pd.DataFrame([{"sektor": "Lainnya", "instansi": "X", "sub_instansi": f"Sub {i:02d}",
+                         "nama_pendek": f"S{i:02d}", "nilai_usd": 100.0 * (i % 3 + 1),
+                         "award_id": str(i), "tahun": 2020} for i in range(60)])
+    g = analisis.per_instansi(trx)
+    tiga = g[g["nilai_usd"] == 300.0]["nama_pendek"].tolist()
+    assert tiga == sorted(tiga)
+    assert g.iloc[0]["nama_pendek"] == "S02"
