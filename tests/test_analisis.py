@@ -227,3 +227,16 @@ def test_konsentrasi_n_negatif_nol():
 
 def test_kontrak_terbesar_n_negatif_kosong():
     assert analisis.kontrak_terbesar(trx_contoh(), n=-1).empty
+
+
+def test_per_negara_bagian_dan_negara_seri_urut_nama():
+    baris = [{"negara_bagian": f"S{i:02d}", "negara_pelaksanaan": "UNITED STATES",
+              "nilai_usd": 100.0 * (i % 3 + 1), "award_id": str(i)} for i in range(60)]
+    nb = analisis.per_negara_bagian(pd.DataFrame(baris))
+    tiga = nb[nb["nilai_usd"] == 300.0]["negara_bagian"].tolist()
+    assert tiga == sorted(tiga)
+    negara = pd.DataFrame([{"negara_pelaksanaan": f"Negeri {i:02d}", "nilai_usd": 100.0 * (i % 3 + 1),
+                            "award_id": str(i)} for i in range(60)])
+    pn = analisis.per_negara(negara)
+    tiga = pn[pn["nilai_usd"] == 300.0]["negara"].tolist()
+    assert tiga == sorted(tiga)
