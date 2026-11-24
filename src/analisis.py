@@ -183,8 +183,10 @@ def plafon_vs_diikat(idv: pd.DataFrame, termasuk_multi: bool = False) -> pd.Data
     """
     d = idv if termasuk_multi else idv[~idv["multi_vendor"]]
     d = d[d["plafon_usd"] > 0].copy()
-    d["terpakai_persen"] = (100 * d["diikat_usd"] / d["plafon_usd"]).clip(upper=999)
-    d["sisa_usd"] = (d["plafon_usd"] - d["diikat_usd"]).clip(lower=0)
+    # Dana diikat bisa negatif setelah deobligasi; dulu jadi "terpakai -20%" dan sisa melebihi plafon.
+    diikat = d["diikat_usd"].clip(lower=0)
+    d["terpakai_persen"] = (100 * diikat / d["plafon_usd"]).clip(upper=999)
+    d["sisa_usd"] = (d["plafon_usd"] - diikat).clip(lower=0)
     # Plafon seri (banyak IDV berplafon bulat sama) diurutkan menurut award_id supaya tabel tidak acak.
     return d.sort_values(["plafon_usd", "award_id"], ascending=[False, True], kind="mergesort").reset_index(drop=True)
 
