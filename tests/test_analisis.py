@@ -264,3 +264,11 @@ def test_porsi_sektor_seri_urut_menurut_nama():
     hasil = analisis.porsi_sektor(trx)
     harapan = sorted(nama, key=lambda s: (-(1 + int(s[-2:]) % 3), s))
     assert hasil["sektor"].tolist() == harapan
+
+
+def test_plafon_vs_diikat_seri_urut_menurut_award_id():
+    ids = [f"IDV{i:02d}" for i in range(60)]
+    idv = pd.DataFrame({"award_id": ids, "plafon_usd": [1000.0 * (1 + i % 3) for i in range(60)],
+                        "diikat_usd": 1.0, "multi_vendor": False})
+    hasil = analisis.plafon_vs_diikat(idv)
+    assert hasil["award_id"].tolist() == sorted(ids, key=lambda a: (-(1 + int(a[3:]) % 3), a))
