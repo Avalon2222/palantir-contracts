@@ -281,3 +281,5 @@ def test_temuan_utama_tanpa_tahun_rekor_kalau_semua_koreksi():
     trx["nilai_usd"] = -trx["nilai_usd"].abs()   # hanya deobligasi
     t = analisis.temuan_utama(trx, uk_contoh(), idv)
     assert t["tahun_rekor"] is None
+    # tanpa tahun rekor, nilainya juga jangan negatif ("- dengan -$3")
+    assert t["nilai_rekor"] == 0.0
