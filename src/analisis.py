@@ -214,6 +214,7 @@ def temuan_utama(trx: pd.DataFrame, uk: pd.DataFrame, idv: pd.DataFrame) -> dict
     dua_th = per_th.loc[[t for t in per_th.index if t >= th_akhir - 1]].sum() if th_akhir is not None else 0.0
     instansi = per_instansi(trx)
     plafon = plafon_vs_diikat(idv)
+    ada_rekor = not per_th.empty and per_th.max() > 0
     return {
         "total_as": float(trx["nilai_usd"].sum()),
         "total_uk_gbp": float(uk.loc[~uk["framework"], "nilai_gbp"].sum()),
@@ -223,8 +224,9 @@ def temuan_utama(trx: pd.DataFrame, uk: pd.DataFrame, idv: pd.DataFrame) -> dict
         "persen_militer": float(porsi.get("Militer & pertahanan", 0.0)),
         "persen_dua_tahun_terakhir": float(100 * dua_th / total) if total > 0 else 0.0,
         # Kalau semua tahun nol atau negatif (hanya koreksi obligasi), tidak ada tahun yang pantas disebut rekor.
-        "tahun_rekor": int(per_th.idxmax()) if not per_th.empty and per_th.max() > 0 else None,
-        "nilai_rekor": float(per_th.max()) if not per_th.empty else 0.0,
+        "tahun_rekor": int(per_th.idxmax()) if ada_rekor else None,
+        # Nilai ikut kosong (0) kalau tidak ada tahun rekor; dulu tampil "- dengan -$3".
+        "nilai_rekor": float(per_th.max()) if ada_rekor else 0.0,
         "instansi_teratas": instansi.iloc[0]["nama_pendek"] if not instansi.empty else "-",
         "persen_instansi_teratas": float(instansi.iloc[0]["persen"]) if not instansi.empty else 0.0,
         "konsentrasi_top5": konsentrasi(trx, 5),
