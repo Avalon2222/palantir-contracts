@@ -122,6 +122,14 @@ def test_plafon_vs_diikat_saring_multi_vendor():
     assert len(analisis.plafon_vs_diikat(idv, termasuk_multi=True)) == 2
 
 
+def test_plafon_vs_diikat_dana_negatif_setelah_deobligasi():
+    idv = pd.DataFrame({"award_id": ["X"], "plafon_usd": [100.0], "diikat_usd": [-20.0], "multi_vendor": [False]})
+    hasil = analisis.plafon_vs_diikat(idv).iloc[0]
+    assert hasil["terpakai_persen"] == 0.0
+    assert hasil["sisa_usd"] == pytest.approx(100.0)   # tidak boleh lebih dari plafon
+    assert hasil["diikat_usd"] == -20.0                # angka asli tetap ditampilkan
+
+
 def test_cari_tidak_peka_huruf():
     df = pd.DataFrame({"deskripsi": ["MAVEN SMART SYSTEM", "Army Vantage"], "instansi": ["DoD", "DoD"]})
     assert len(analisis.cari(df, "maven", ["deskripsi", "instansi"])) == 1
