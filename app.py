@@ -168,7 +168,7 @@ with tab_peta:
         f"<div class='kartu'>Sejak {rentang[0]}, pemerintah AS mengikat <b>{format_usd(T['total_as'])}</b> untuk Palantir "
         f"lewat <b>{T['jumlah_kontrak_as']}</b> kontrak di <b>{T['jumlah_instansi']}</b> instansi. Klien terbesar: "
         f"<b>{T['instansi_teratas']}</b> ({T['persen_instansi_teratas']:.0f}% dari total). Rekor tahunan terjadi pada "
-        f"<b>{T['tahun_rekor']}</b> dengan <b>{format_usd(T['nilai_rekor'])}</b>"
+        f"<b>{T['tahun_rekor'] or '-'}</b> dengan <b>{format_usd(T['nilai_rekor'])}</b>"
         f"{' (dan tahunnya belum selesai)' if T['tahun_rekor'] == TAHUN_BERJALAN else ''}.</div>",
         unsafe_allow_html=True,
     )

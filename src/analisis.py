@@ -222,7 +222,8 @@ def temuan_utama(trx: pd.DataFrame, uk: pd.DataFrame, idv: pd.DataFrame) -> dict
         "jumlah_instansi": int(instansi["sub_instansi"].nunique()),
         "persen_militer": float(porsi.get("Militer & pertahanan", 0.0)),
         "persen_dua_tahun_terakhir": float(100 * dua_th / total) if total > 0 else 0.0,
-        "tahun_rekor": int(per_th.idxmax()) if not per_th.empty else None,
+        # Kalau semua tahun nol atau negatif (hanya koreksi obligasi), tidak ada tahun yang pantas disebut rekor.
+        "tahun_rekor": int(per_th.idxmax()) if not per_th.empty and per_th.max() > 0 else None,
         "nilai_rekor": float(per_th.max()) if not per_th.empty else 0.0,
         "instansi_teratas": instansi.iloc[0]["nama_pendek"] if not instansi.empty else "-",
         "persen_instansi_teratas": float(instansi.iloc[0]["persen"]) if not instansi.empty else 0.0,
