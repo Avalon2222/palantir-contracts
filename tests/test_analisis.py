@@ -256,3 +256,11 @@ def test_per_instansi_nilai_seri_urut_nama_pendek():
     tiga = g[g["nilai_usd"] == 300.0]["nama_pendek"].tolist()
     assert tiga == sorted(tiga)
     assert g.iloc[0]["nama_pendek"] == "S02"
+
+
+def test_porsi_sektor_seri_urut_menurut_nama():
+    nama = [f"Sektor {i:02d}" for i in range(60)]
+    trx = pd.DataFrame({"sektor": nama, "nilai_usd": [float(1 + i % 3) for i in range(60)]})
+    hasil = analisis.porsi_sektor(trx)
+    harapan = sorted(nama, key=lambda s: (-(1 + int(s[-2:]) % 3), s))
+    assert hasil["sektor"].tolist() == harapan

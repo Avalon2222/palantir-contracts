@@ -62,7 +62,8 @@ def per_tahun_sektor(trx: pd.DataFrame, kolom_tahun: str = "tahun") -> pd.DataFr
 def porsi_sektor(trx: pd.DataFrame) -> pd.DataFrame:
     """Total dan persentase per sektor, urut dari terbesar."""
     tot = trx.groupby("sektor", as_index=False)["nilai_usd"].sum()
-    tot = tot[tot["nilai_usd"] > 0].sort_values("nilai_usd", ascending=False)
+    # Nilai seri diurutkan menurut nama sektor (mergesort stabil), bukan acak dari quicksort.
+    tot = tot[tot["nilai_usd"] > 0].sort_values(["nilai_usd", "sektor"], ascending=[False, True], kind="mergesort")
     tot["persen"] = 100 * tot["nilai_usd"] / tot["nilai_usd"].sum()
     return tot.reset_index(drop=True)
 
