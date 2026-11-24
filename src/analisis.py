@@ -185,7 +185,8 @@ def plafon_vs_diikat(idv: pd.DataFrame, termasuk_multi: bool = False) -> pd.Data
     d = d[d["plafon_usd"] > 0].copy()
     d["terpakai_persen"] = (100 * d["diikat_usd"] / d["plafon_usd"]).clip(upper=999)
     d["sisa_usd"] = (d["plafon_usd"] - d["diikat_usd"]).clip(lower=0)
-    return d.sort_values("plafon_usd", ascending=False).reset_index(drop=True)
+    # Plafon seri (banyak IDV berplafon bulat sama) diurutkan menurut award_id supaya tabel tidak acak.
+    return d.sort_values(["plafon_usd", "award_id"], ascending=[False, True], kind="mergesort").reset_index(drop=True)
 
 
 def kontrak_terbesar(kontrak: pd.DataFrame, n: int = 10) -> pd.DataFrame:
