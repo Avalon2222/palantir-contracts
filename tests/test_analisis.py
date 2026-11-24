@@ -272,3 +272,12 @@ def test_plafon_vs_diikat_seri_urut_menurut_award_id():
                         "diikat_usd": 1.0, "multi_vendor": False})
     hasil = analisis.plafon_vs_diikat(idv)
     assert hasil["award_id"].tolist() == sorted(ids, key=lambda a: (-(1 + int(a[3:]) % 3), a))
+
+
+def test_temuan_utama_tanpa_tahun_rekor_kalau_semua_koreksi():
+    idv = pd.DataFrame({"award_id": pd.Series([], dtype=str), "plafon_usd": pd.Series([], dtype=float),
+                        "diikat_usd": pd.Series([], dtype=float), "multi_vendor": pd.Series([], dtype=bool)})
+    trx = trx_contoh().copy()
+    trx["nilai_usd"] = -trx["nilai_usd"].abs()   # hanya deobligasi
+    t = analisis.temuan_utama(trx, uk_contoh(), idv)
+    assert t["tahun_rekor"] is None
