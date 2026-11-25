@@ -111,7 +111,9 @@ def muat_kontrak_uk() -> pd.DataFrame:
     df["tanggal"] = df["tanggal_award"].fillna(df["diumumkan"])
     df["tahun"] = df["tanggal"].dt.year
     df["nilai_gbp"] = pd.to_numeric(df["nilai_gbp"], errors="coerce").fillna(0.0)
-    df["framework"] = df["framework"].astype(str).str.lower().eq("true")
+    # Suntingan manual seperti "TRUE ", "Yes", atau "1" tetap dibaca framework; dulu hanya "true" persis
+    # yang dikenali, sehingga plafon framework ikut terhitung sebagai kontrak dan total Inggris membengkak.
+    df["framework"] = df["framework"].astype(str).str.strip().str.lower().isin(["true", "1", "yes", "ya", "y"])
     df["pembeli"] = df["pembeli"].fillna("").str.strip()
     df["pembeli_rapi"] = df["pembeli"].map(rapikan_pembeli)
     df["sektor"] = df["pembeli"].map(sektor.sektor_uk)
