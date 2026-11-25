@@ -70,8 +70,9 @@ def muat_idv_as() -> pd.DataFrame:
     df = pd.read_csv(DATA / "as_idv.csv")
     for kol in ["mulai", "batas_pesan"]:
         df[kol] = pd.to_datetime(df[kol], errors="coerce")
-    df["plafon_usd"] = pd.to_numeric(df["plafon_usd"], errors="coerce").fillna(0.0)
-    df["diikat_usd"] = pd.to_numeric(df["diikat_usd"], errors="coerce").fillna(0.0)
+    # Plafon "inf" dulu membuat terpakai_persen 0% dan sisa tak hingga di tabel kontrak payung.
+    df["plafon_usd"] = _uang(df["plafon_usd"])
+    df["diikat_usd"] = _uang(df["diikat_usd"])
     df["multi_vendor"] = df["tipe_award"].fillna("").str.upper().str.startswith("MULTIPLE")
     df["deskripsi"] = df["deskripsi"].fillna("")
     df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")

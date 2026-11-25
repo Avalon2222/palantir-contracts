@@ -177,3 +177,21 @@ def test_transaksi_nilai_tak_hingga_dihitung_nol(tmp_path, monkeypatch):
     df = muat_data.muat_transaksi_as()
     assert df["nilai_usd"].tolist() == [100.0, 0.0]
     assert analisis.format_usd(df["nilai_usd"].sum()) == "$100"
+
+
+def test_idv_plafon_tak_hingga_dihitung_nol(tmp_path, monkeypatch):
+    kolom = ("award_id,penerima,instansi,sub_instansi,mulai,batas_pesan,deskripsi,jenis,id_usaspending,"
+             "plafon_usd,diikat_usd,jumlah_pesanan,tipe_award\n")
+    (tmp_path / "as_idv.csv").write_text(
+        kolom
+        + "I1,PALANTIR USG INC,Department of Defense,Department of the Army,2024-01-01,2030-01-01,x,IDIQ,ID1,"
+          "1000,250,1,SINGLE AWARD\n"
+        + "I2,PALANTIR USG INC,Department of Defense,Department of the Army,2024-01-01,2030-01-01,y,IDIQ,ID2,"
+          "inf,-inf,1,SINGLE AWARD\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_idv_as()
+    assert df["plafon_usd"].tolist() == [1000.0, 0.0]
+    assert df["diikat_usd"].tolist() == [250.0, 0.0]
+    assert analisis.plafon_vs_diikat(df)["award_id"].tolist() == ["I1"]
