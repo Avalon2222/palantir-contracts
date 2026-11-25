@@ -10,6 +10,7 @@ import json
 import re
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from src import sektor
@@ -33,6 +34,12 @@ def tambah_sektor_as(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _uang(kolom: pd.Series) -> pd.Series:
+    """Kolom nilai uang -> float. Sel rusak dan "inf" dihitung 0; inf membuat semua total jadi "-"."""
+    angka = pd.to_numeric(kolom, errors="coerce")
+    return angka.where(np.isfinite(angka), 0.0)
+
+
 def muat_transaksi_as() -> pd.DataFrame:
     """Satu baris = satu aksi kontrak (award baru, modifikasi, tambahan dana, atau koreksi negatif)."""
     df = pd.read_csv(DATA / "as_transaksi.csv", dtype={"kode_naics": "string", "modifikasi": "string"})
@@ -41,7 +48,7 @@ def muat_transaksi_as() -> pd.DataFrame:
     df["tahun"] = df["tanggal"].dt.year
     # Tahun fiskal federal AS dimulai 1 Oktober: 15 Okt 2025 masuk FY2026.
     df["tahun_fiskal"] = df["tahun"] + (df["tanggal"].dt.month >= 10).astype(int)
-    df["nilai_usd"] = pd.to_numeric(df["nilai_usd"], errors="coerce").fillna(0.0)
+    df["nilai_usd"] = _uang(df["nilai_usd"])
     df["deskripsi"] = df["deskripsi"].fillna("")
     df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")
     return tambah_sektor_as(df)

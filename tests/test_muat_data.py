@@ -163,3 +163,17 @@ def test_kurs_tahunan_tabel_kosong_jadi_nan():
     kurs = pd.DataFrame({"tahun": [2020], "gbp_ke_usd": [None]})
     hasil = muat_data.kurs_tahunan(pd.Series([2020, 2021]), kurs)
     assert hasil.isna().all() and len(hasil) == 2
+
+
+def test_transaksi_nilai_tak_hingga_dihitung_nol(tmp_path, monkeypatch):
+    kolom = "tanggal,award_id,nilai_usd,instansi,sub_instansi,deskripsi,id_usaspending\n"
+    (tmp_path / "as_transaksi.csv").write_text(
+        kolom
+        + "2024-10-05,A1,100,Department of Defense,Department of the Army,x,ID1\n"
+        + "2024-10-06,A2,inf,Department of Defense,Department of the Army,y,ID2\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_transaksi_as()
+    assert df["nilai_usd"].tolist() == [100.0, 0.0]
+    assert analisis.format_usd(df["nilai_usd"].sum()) == "$100"
