@@ -239,3 +239,17 @@ def test_kontrak_as_nilai_rusak_dihitung_nol(tmp_path, monkeypatch):
     df = muat_data.muat_kontrak_as()
     assert df["nilai_usd"].tolist() == [100.0, 0.0, 0.0]
     assert df["dibayar_usd"].tolist() == [50.0, 0.0, 0.0]
+
+
+def test_url_award_kosong_kalau_id_tidak_ada(tmp_path, monkeypatch):
+    kolom = "tanggal,award_id,nilai_usd,instansi,sub_instansi,deskripsi,id_usaspending\n"
+    (tmp_path / "as_transaksi.csv").write_text(
+        kolom
+        + "2024-10-05,A1,100,Department of Defense,Department of the Army,x,CONT_1\n"
+        + "2024-10-06,A2,50,Department of Defense,Department of the Army,y,\n"
+        + "2024-10-07,A3,50,Department of Defense,Department of the Army,z,  \n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_transaksi_as()
+    assert df["url"].tolist() == ["https://www.usaspending.gov/award/CONT_1", "", ""]

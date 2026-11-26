@@ -40,6 +40,15 @@ def _uang(kolom: pd.Series) -> pd.Series:
     return angka.where(np.isfinite(angka), 0.0)
 
 
+def _url_award(id_award: pd.Series) -> pd.Series:
+    """Link ke halaman award di USAspending; kosong kalau id-nya tidak ada.
+
+    Dulu id kosong menghasilkan URL_AWARD_AS saja, link yang tampil di tabel tetapi membuka halaman 404.
+    """
+    teks = id_award.map(lambda v: v.strip() if isinstance(v, str) else "")
+    return teks.map(lambda v: URL_AWARD_AS + v if v else "")
+
+
 def muat_transaksi_as() -> pd.DataFrame:
     """Satu baris = satu aksi kontrak (award baru, modifikasi, tambahan dana, atau koreksi negatif)."""
     df = pd.read_csv(DATA / "as_transaksi.csv", dtype={"kode_naics": "string", "modifikasi": "string"})
@@ -50,7 +59,7 @@ def muat_transaksi_as() -> pd.DataFrame:
     df["tahun_fiskal"] = df["tahun"] + (df["tanggal"].dt.month >= 10).astype(int)
     df["nilai_usd"] = _uang(df["nilai_usd"])
     df["deskripsi"] = df["deskripsi"].fillna("")
-    df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")
+    df["url"] = _url_award(df["id_usaspending"])
     return tambah_sektor_as(df)
 
 
@@ -66,7 +75,7 @@ def muat_kontrak_as() -> pd.DataFrame:
         if kol in df.columns:
             df[kol] = _uang(df[kol])
     df["deskripsi"] = df["deskripsi"].fillna("")
-    df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")
+    df["url"] = _url_award(df["id_usaspending"])
     return tambah_sektor_as(df)
 
 
@@ -80,7 +89,7 @@ def muat_idv_as() -> pd.DataFrame:
     df["diikat_usd"] = _uang(df["diikat_usd"])
     df["multi_vendor"] = df["tipe_award"].fillna("").str.upper().str.startswith("MULTIPLE")
     df["deskripsi"] = df["deskripsi"].fillna("")
-    df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")
+    df["url"] = _url_award(df["id_usaspending"])
     return tambah_sektor_as(df)
 
 
