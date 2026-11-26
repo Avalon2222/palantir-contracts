@@ -209,3 +209,18 @@ def test_uk_framework_suntingan_manual_tetap_dikenali(tmp_path, monkeypatch):
     monkeypatch.setattr(muat_data, "DATA", tmp_path)
     df = muat_data.muat_kontrak_uk()
     assert df["framework"].tolist() == [True, True, True, True, False, False, False]
+
+
+def test_uk_nilai_tak_hingga_dihitung_nol(tmp_path, monkeypatch):
+    import shutil
+    shutil.copy(muat_data.DATA / "kurs_gbp_usd.csv", tmp_path / "kurs_gbp_usd.csv")
+    kolom = "id,diumumkan,tanggal_award,mulai,selesai,pembeli,nilai_gbp,framework\n"
+    isi = "".join(
+        f"U{i},2024-01-01,2024-01-01,2024-01-01,2025-01-01,NHS England,{v},False\n"
+        for i, v in enumerate(["100", "inf", "-inf", "rusak"])
+    )
+    (tmp_path / "uk_kontrak.csv").write_text(kolom + isi, encoding="utf-8")
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_kontrak_uk()
+    assert df["nilai_gbp"].tolist() == [100.0, 0.0, 0.0, 0.0]
+    assert pd.notna(df["nilai_usd"].sum()) and df["nilai_usd"].sum() > 0
