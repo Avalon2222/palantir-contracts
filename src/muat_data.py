@@ -60,6 +60,11 @@ def muat_kontrak_as() -> pd.DataFrame:
     for kol in ["mulai", "selesai"]:
         df[kol] = pd.to_datetime(df[kol], errors="coerce")
     df["tahun_mulai"] = df["mulai"].dt.year
+    # Dulu nilai kontrak dibaca apa adanya: satu sel rusak ("-") membuat kolomnya teks dan sum()
+    # menyambung string; "inf" membuat total kontrak tak hingga. Disamakan dengan berkas transaksi.
+    for kol in ["nilai_usd", "dibayar_usd"]:
+        if kol in df.columns:
+            df[kol] = _uang(df[kol])
     df["deskripsi"] = df["deskripsi"].fillna("")
     df["url"] = URL_AWARD_AS + df["id_usaspending"].fillna("")
     return tambah_sektor_as(df)

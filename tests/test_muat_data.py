@@ -224,3 +224,18 @@ def test_uk_nilai_tak_hingga_dihitung_nol(tmp_path, monkeypatch):
     df = muat_data.muat_kontrak_uk()
     assert df["nilai_gbp"].tolist() == [100.0, 0.0, 0.0, 0.0]
     assert pd.notna(df["nilai_usd"].sum()) and df["nilai_usd"].sum() > 0
+
+
+def test_kontrak_as_nilai_rusak_dihitung_nol(tmp_path, monkeypatch):
+    kolom = "award_id,penerima,nilai_usd,dibayar_usd,instansi,sub_instansi,mulai,selesai,deskripsi,id_usaspending\n"
+    (tmp_path / "as_kontrak.csv").write_text(
+        kolom
+        + "K1,PALANTIR USG INC,100,50,Department of Defense,Department of the Army,2024-01-01,2025-01-01,x,ID1\n"
+        + "K2,PALANTIR USG INC,-,inf,Department of Defense,Department of the Army,2024-01-01,2025-01-01,y,ID2\n"
+        + "K3,PALANTIR USG INC,inf,0,Department of Defense,Department of the Army,2024-01-01,2025-01-01,z,ID3\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_kontrak_as()
+    assert df["nilai_usd"].tolist() == [100.0, 0.0, 0.0]
+    assert df["dibayar_usd"].tolist() == [50.0, 0.0, 0.0]
