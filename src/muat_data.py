@@ -94,7 +94,13 @@ def muat_idv_as() -> pd.DataFrame:
 
 
 def muat_kurs() -> pd.DataFrame:
-    return pd.read_csv(DATA / "kurs_gbp_usd.csv")
+    df = pd.read_csv(DATA / "kurs_gbp_usd.csv")
+    # Satu sel rusak ("-") membuat kolom kurs jadi teks dan nilai_gbp * kurs gagal; kurs "inf", nol,
+    # atau negatif juga bukan kurs nyata. Semuanya dikosongkan supaya kurs_tahunan memakai tahun terdekat.
+    for kol in ["tahun", "gbp_ke_usd"]:
+        df[kol] = pd.to_numeric(df[kol], errors="coerce")
+    df["gbp_ke_usd"] = df["gbp_ke_usd"].where(np.isfinite(df["gbp_ke_usd"]) & (df["gbp_ke_usd"] > 0))
+    return df
 
 
 def kurs_tahunan(tahun: pd.Series, kurs: pd.DataFrame) -> pd.Series:

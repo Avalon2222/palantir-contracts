@@ -259,3 +259,13 @@ def test_kurs_tahunan_tahun_dobel_tidak_error():
     kurs = pd.DataFrame({"tahun": [2015, 2016, 2016], "gbp_ke_usd": [1.52, 1.30, 1.35]})
     hasil = muat_data.kurs_tahunan(pd.Series([2015.0, 2016.0, 2020.0]), kurs)
     assert hasil.tolist() == [1.52, 1.35, 1.35]
+
+
+def test_kurs_rusak_dikosongkan(tmp_path, monkeypatch):
+    (tmp_path / "kurs_gbp_usd.csv").write_text("tahun,gbp_ke_usd\n2020,1.28\n2021,-\n2022,inf\n2023,0\n", encoding="utf-8")
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    kurs = muat_data.muat_kurs()
+    assert kurs["gbp_ke_usd"].iloc[0] == 1.28
+    assert kurs["gbp_ke_usd"].iloc[1:].isna().all()
+    hasil = muat_data.kurs_tahunan(pd.Series([2022.0]), kurs)
+    assert hasil.tolist() == [1.28]
