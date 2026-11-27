@@ -199,10 +199,14 @@ def kontrak_terbesar(kontrak: pd.DataFrame, n: int = 10) -> pd.DataFrame:
 
 def cari(df: pd.DataFrame, kata: str, kolom: list[str]) -> pd.DataFrame:
     """Pencarian teks sederhana (tidak peka huruf besar) di beberapa kolom sekaligus."""
-    kata = (kata or "").strip()
+    # Spasi ganda (di kata kunci atau di deskripsi kontrak) dirapikan jadi satu, supaya "army  vantage"
+    # tetap menemukan "Army Vantage".
+    kata = " ".join((kata or "").split())
     if not kata:
         return df
-    gabungan = df[kolom].fillna("").astype(str).agg(" ".join, axis=1)
+    if df.empty:
+        return df
+    gabungan = df[kolom].fillna("").astype(str).agg(" ".join, axis=1).str.split().str.join(" ")
     return df[gabungan.str.contains(kata, case=False, regex=False)]
 
 
