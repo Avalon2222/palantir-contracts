@@ -253,3 +253,9 @@ def test_url_award_kosong_kalau_id_tidak_ada(tmp_path, monkeypatch):
     monkeypatch.setattr(muat_data, "DATA", tmp_path)
     df = muat_data.muat_transaksi_as()
     assert df["url"].tolist() == ["https://www.usaspending.gov/award/CONT_1", "", ""]
+
+
+def test_kurs_tahunan_tahun_dobel_tidak_error():
+    kurs = pd.DataFrame({"tahun": [2015, 2016, 2016], "gbp_ke_usd": [1.52, 1.30, 1.35]})
+    hasil = muat_data.kurs_tahunan(pd.Series([2015.0, 2016.0, 2020.0]), kurs)
+    assert hasil.tolist() == [1.52, 1.35, 1.35]
