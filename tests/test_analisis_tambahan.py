@@ -79,3 +79,10 @@ def test_kumulatif_transaksi_tanpa_tanggal_tidak_hilang():
     hasil = analisis.kumulatif(trx)
     assert hasil["kumulatif_usd"].iloc[-1] == 6.0   # baris tanpa tanggal dan tahun saja yang dilewati
     assert hasil.loc[hasil["tanggal"] == pd.Timestamp("2024-01-01"), "nilai_usd"].item() == 3.0
+
+
+def test_cari_spasi_ganda_tetap_ketemu():
+    df = pd.DataFrame({"deskripsi": ["Army  Vantage data platform", "Maven Smart System"], "instansi": ["Army", "DoD"]})
+    assert analisis.cari(df, "army vantage", ["deskripsi"])["instansi"].tolist() == ["Army"]
+    assert analisis.cari(df, "maven   smart", ["deskripsi"])["instansi"].tolist() == ["DoD"]
+    assert analisis.cari(df.iloc[0:0], "maven", ["deskripsi"]).empty
