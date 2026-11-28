@@ -269,3 +269,12 @@ def test_kurs_rusak_dikosongkan(tmp_path, monkeypatch):
     assert kurs["gbp_ke_usd"].iloc[1:].isna().all()
     hasil = muat_data.kurs_tahunan(pd.Series([2022.0]), kurs)
     assert hasil.tolist() == [1.28]
+
+
+def test_sub_instansi_spasi_saja_diisi_dari_instansi():
+    df = pd.DataFrame({"instansi": ["Department of Defense ", "Department of Defense"],
+                       "sub_instansi": ["   ", " Department of the Army "]})
+    hasil = muat_data.tambah_sektor_as(df)
+    assert hasil["sub_instansi"].tolist() == ["Department of Defense", "Department of the Army"]
+    assert hasil["sektor"].tolist() == ["Militer & pertahanan", "Militer & pertahanan"]
+    assert hasil["nama_pendek"].iloc[1] == "US Army"
