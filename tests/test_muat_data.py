@@ -278,3 +278,18 @@ def test_sub_instansi_spasi_saja_diisi_dari_instansi():
     assert hasil["sub_instansi"].tolist() == ["Department of Defense", "Department of the Army"]
     assert hasil["sektor"].tolist() == ["Militer & pertahanan", "Militer & pertahanan"]
     assert hasil["nama_pendek"].iloc[1] == "US Army"
+
+
+def test_uk_nilai_negatif_dihitung_nol(tmp_path, monkeypatch):
+    import shutil
+    shutil.copy(muat_data.DATA / "kurs_gbp_usd.csv", tmp_path / "kurs_gbp_usd.csv")
+    kolom = "id,diumumkan,tanggal_award,mulai,selesai,pembeli,nilai_gbp,framework\n"
+    isi = "".join(
+        f"U{i},2024-01-01,2024-01-01,2024-01-01,2025-01-01,NHS England,{v},False\n"
+        for i, v in enumerate(["100", "-250"])
+    )
+    (tmp_path / "uk_kontrak.csv").write_text(kolom + isi, encoding="utf-8")
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_kontrak_uk()
+    assert df["nilai_gbp"].tolist() == [100.0, 0.0]
+    assert (df["nilai_usd"] >= 0).all()
