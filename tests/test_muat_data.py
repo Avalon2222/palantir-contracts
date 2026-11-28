@@ -293,3 +293,19 @@ def test_uk_nilai_negatif_dihitung_nol(tmp_path, monkeypatch):
     df = muat_data.muat_kontrak_uk()
     assert df["nilai_gbp"].tolist() == [100.0, 0.0]
     assert (df["nilai_usd"] >= 0).all()
+
+
+def test_uk_pengumuman_ganda_dipakai_sekali(tmp_path, monkeypatch):
+    import shutil
+    shutil.copy(muat_data.DATA / "kurs_gbp_usd.csv", tmp_path / "kurs_gbp_usd.csv")
+    kolom = "id,diumumkan,tanggal_award,mulai,selesai,pembeli,nilai_gbp,framework\n"
+    isi = (
+        "U1,2024-01-01,2024-01-01,2024-01-01,2025-01-01,NHS England,100,False\n"
+        "U2,2024-02-01,2024-02-01,2024-02-01,2025-01-01,Ministry of Defence,40,False\n"
+        "U1,2024-01-01,2024-01-01,2024-01-01,2025-01-01,NHS England,120,False\n"
+    )
+    (tmp_path / "uk_kontrak.csv").write_text(kolom + isi, encoding="utf-8")
+    monkeypatch.setattr(muat_data, "DATA", tmp_path)
+    df = muat_data.muat_kontrak_uk()
+    assert df["id"].tolist() == ["U2", "U1"]
+    assert df["nilai_gbp"].sum() == 160.0
