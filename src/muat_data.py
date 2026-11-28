@@ -28,6 +28,10 @@ def muat_meta() -> dict:
 
 def tambah_sektor_as(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    # Sub-instansi berisi spasi saja (ekspor USAspending yang tidak rapi) dulu lolos fillna, lalu
+    # sektornya "Lainnya" dan nama pendeknya kosong di grafik instansi.
+    for kol in ("instansi", "sub_instansi"):
+        df[kol] = df[kol].map(lambda v: v.strip() if isinstance(v, str) else v).replace("", None)
     df["sub_instansi"] = df["sub_instansi"].fillna(df["instansi"])
     df["sektor"] = [sektor.sektor_as(a, b) for a, b in zip(df["instansi"], df["sub_instansi"])]
     df["nama_pendek"] = df["sub_instansi"].map(sektor.singkat)
