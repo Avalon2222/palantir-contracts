@@ -139,6 +139,9 @@ def muat_kontrak_uk() -> pd.DataFrame:
     # Sama seperti nilai AS: "inf" lolos to_numeric dan fillna, lalu total Inggris jadi tak hingga.
     # Nilai pengumuman negatif tidak punya arti (Contracts Finder tidak mencatat deobligasi); dihitung 0.
     df["nilai_gbp"] = _uang(df["nilai_gbp"]).clip(lower=0.0)
+    # Pengumuman yang terkumpul dua kali (id sama, mis. pengumpul data diulang) dulu menggandakan
+    # nilai kontrak Inggris di grafik AS vs Inggris; pakai versi terakhir.
+    df = df.drop_duplicates("id", keep="last").reset_index(drop=True)
     # Suntingan manual seperti "TRUE ", "Yes", atau "1" tetap dibaca framework; dulu hanya "true" persis
     # yang dikenali, sehingga plafon framework ikut terhitung sebagai kontrak dan total Inggris membengkak.
     df["framework"] = df["framework"].astype(str).str.strip().str.lower().isin(["true", "1", "yes", "ya", "y"])
