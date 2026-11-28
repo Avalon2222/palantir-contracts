@@ -137,7 +137,8 @@ def muat_kontrak_uk() -> pd.DataFrame:
     df["tanggal"] = df["tanggal_award"].fillna(df["diumumkan"])
     df["tahun"] = df["tanggal"].dt.year
     # Sama seperti nilai AS: "inf" lolos to_numeric dan fillna, lalu total Inggris jadi tak hingga.
-    df["nilai_gbp"] = _uang(df["nilai_gbp"])
+    # Nilai pengumuman negatif tidak punya arti (Contracts Finder tidak mencatat deobligasi); dihitung 0.
+    df["nilai_gbp"] = _uang(df["nilai_gbp"]).clip(lower=0.0)
     # Suntingan manual seperti "TRUE ", "Yes", atau "1" tetap dibaca framework; dulu hanya "true" persis
     # yang dikenali, sehingga plafon framework ikut terhitung sebagai kontrak dan total Inggris membengkak.
     df["framework"] = df["framework"].astype(str).str.strip().str.lower().isin(["true", "1", "yes", "ya", "y"])
